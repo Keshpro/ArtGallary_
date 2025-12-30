@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggrani Karunarathna | Art Portfolio</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* --- Premium CSS Variables --- */
+        :root {
+            --bg-color: #0a0a0a;       /* Almost Black */
+            --text-color: #e0e0e0;     /* Soft White */
+            --gold-accent: #d4af37;    /* Classic Gold */
+            --card-bg: #151515;        /* Dark Grey */
+        }
+
+        /* --- Global Reset & Typography --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none; /* Hide default cursor */
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow-x: hidden;
+            line-height: 1.9; /* Increased line height for elegance */
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300; /* Thinner weight for premium look */
+        }
+
+        /* --- ANIMATED BACKGROUND (Particles) --- */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0; left: 0;
+            background-color: var(--bg-color);
+            z-index: -10;
+        }
+
+        /* --- Custom Cursor --- */
+        .cursor {
+            width: 30px; /* Slightly larger */
+            height: 30px;
+            border: 1px solid var(--gold-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease-out;
+            mix-blend-mode: difference;
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gold-accent);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* --- Hero Section with Ken Burns Animation --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden; /* To contain the zooming background */
+            z-index: 1;
+        }
+
+        /* Hero Background Image (Animates Separately) */
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            /* Ken Burns Effect: Smooth Zoom */
+            animation: kenBurns 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        /* Premium Typography Tweaks for Hero */
+        .hero h1 {
+            font-size: 5.5rem; /* Larger */
+            color: var(--gold-accent);
+            letter-spacing: 5px; /* Wider spacing */
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .hero h2 {
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 8px; /* Very wide spacing for "THE PORTFOLIO OF" */
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        .hero p {
+            max-width: 600px;
+            font-size: 1.1rem;
+            font-weight: 300;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        /* Scroll indicator */
+        .scroll-line {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--gold-accent);
+            animation: scrollDown 2s infinite;
+        }
+
+        @keyframes scrollDown {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* --- Content Sections --- */
+        .about, .gallery, footer {
+            position: relative;
+            z-index: 5;
+        }
+
+        /* --- About Section --- */
+        .about {
+            padding: 150px 5%; /* More breathing room */
+            max-width: 1200px;
+            margin: auto;
+            background: linear-gradient(to bottom, var(--bg-color), transparent);
+        }
+
+        .about h2 {
+            font-size: 4rem; /* Larger Section Header */
+            color: var(--gold-accent);
+            margin-bottom: 80px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .about-content-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 80px;
+        }
+
+        .about-image-col {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .about-image-col img {
+            width: 100%;
+            height: auto;
+            border-radius: 50%;
+            border: 2px solid var(--gold-accent);
+            padding: 10px; /* Gap between border and image */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .about-image-col img:hover {
+            transform: scale(1.02);
+            border-color: #fff;
+        }
+
+        .about-text-col {
+            flex: 1.2;
+            text-align: left;
+        }
+
+        .about-text {
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: #d1d1d1;
+        }
+
+        .sinhala-quote {
+            margin-bottom: 40px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.8rem;
+            color: var(--text-color);
+            border-left: 3px solid var(--gold-accent);
+            padding-left: 20px;
+        }
+
+        .highlight {
+            color: var(--gold-accent);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        /* --- Gallery Section --- */
+        .gallery {
+            padding: 100px 5%;
+            background-color: #0f0f0f;
+            box-shadow: 0 -50px 100px rgba(0,0,0,0.5); /* Smooth fade into gallery */
+        }
+
+        .gallery-header {
+            text-align: center;
+            margin-bottom: 100px;
+        }
+
+        .gallery-header h2 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .gallery-header span {
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.9rem;
+            color: var(--gold-accent);
+        }
+
+        .gallery-grid {
+            column-count: 3;
+            column-gap: 30px;
+        }
+
+        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 2px; /* Sharper corners for modern art look */
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            filter: grayscale(30%) brightness(0.8); /* Moodier default state */
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.08);
+            filter: grayscale(0%) brightness(1);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 10, 0.85); /* Darker overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            text-align: center;
+            padding: 30px;
+            border: 1px solid var(--gold-accent);
+            margin: 15px;
+            width: calc(100% - 30px);
+            height: calc(100% - 30px);
+            backdrop-filter: blur(3px);
+        }
+
+        .gallery-item:hover .overlay { opacity: 1; }
+
+        .overlay h3 {
+            font-size: 2rem;
+            color: white;
+            transform: translateY(30px);
+            transition: transform 0.5s ease;
+            margin-bottom: 15px;
+        }
+
+        .gallery-item:hover .overlay h3 { transform: translateY(0); }
+
+        .overlay p {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            color: #ddd;
+            line-height: 1.6;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 80px 20px;
+            background: #050505;
+            color: #666;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .footer-credit {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #ccc;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .gallery-grid { column-count: 2; }
+            .hero h1 { font-size: 4rem; }
+        }
+
+        @media (max-width: 900px) {
+            .about-content-wrapper { flex-direction: column; text-align: center; }
+            .about-text-col { text-align: center; }
+            .about-image-col { max-width: 300px; margin-bottom: 40px; }
+            .sinhala-quote { border-left: none; border-bottom: 2px solid var(--gold-accent); padding-bottom: 10px; padding-left: 0;}
+        }
+
+        @media (max-width: 600px) {
+            .gallery-grid { column-count: 1; }
+            .hero h1 { font-size: 3rem; letter-spacing: 2px; }
+            .hero h2 { letter-spacing: 3px; font-size: 0.8rem; }
+            .about h2 { font-size: 3rem; }
+            .cursor, .cursor-dot { display: none; }
+            * { cursor: auto; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="particles-js"></div>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-dot" id="cursor-dot"></div>
+
+    <section class="hero" data-aos="fade-in" data-aos-duration="2000">
+        <div class="hero-bg"></div>
+
+        <h2 data-aos="fade-down" data-aos-delay="200">The Portfolio Of</h2>
+        <h1 data-aos="zoom-in" data-aos-delay="500">Aggrani Karunarathna</h1>
+        <p data-aos="fade-up" data-aos-delay="800">
+            Original Oil Pastel Art & Illustrations <br>
+            <span style="color:var(--gold-accent); font-size: 0.8rem; letter-spacing: 3px; margin-top: 10px; display: inline-block;">CHRISTCHURCH BASED ARTIST</span>
+        </p>
+        <div class="scroll-line"></div>
+    </section>
+
+    <section class="about">
+        <h2 data-aos="fade-up">The Artist's Soul</h2>
+
+        <div class="about-content-wrapper">
+            <div class="about-image-col" data-aos="fade-right" data-aos-delay="200">
+                <img src="assets/img/aaa.webp" alt="Aggrani Karunarathna Portrait">
+            </div>
+
+            <div class="about-text-col" data-aos="fade-left" data-aos-delay="400">
+                <div class="about-text">
+                    <p class="sinhala-quote">
+                        "ඇයගේ ඇඟිලි තුඩු වලට පුළුවන් පාට පැන්සල්, බ්‍රෂ් එක පණ ගන්වන්න."
+                    </p>
+                    <p>
+                        I am Aggrani Karunarathna, a 22-year-old emerging artist based in Christchurch.
+                        My work is a fusion of <span class="highlight">bold colors</span>, intricate patterns, and
+                        animal symbolism.
+                        <br><br>
+                        Specializing in vibrant, hand-drawn oil pastel illustrations, I explore the connection between
+                        nature's wild beauty and contemporary decorative art. Every piece is a story of patience,
+                        joy, and emotion brought to life on canvas.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="gallery">
+        <div class="gallery-header" data-aos="fade-down">
+            <span>Selected Works</span>
+            <h2>Masterpieces</h2>
+        </div>
+
+        <div class="gallery-grid">
+            <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000">
+                <img src="assets/img/IMG_7779.webp" alt="Ocean Jewels">
+                <div class="overlay">
+                    <h3>Ocean Jewels</h3>
+                    <p>An elegant seahorse design inspired by the beauty and mystery of the ocean, blending soft curves with striking, jewel-like colors.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
+                <img src="assets/img/IMG_7780.webp" alt="Jungle Spirit">
+                <div class="overlay">
+                    <h3>Jungle Spirit</h3>
+                    <p>A vibrant monkey portrait filled with playful patterns and bold colors, reflecting the intelligence and funloving nature.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                <img src="assets/img/IMG_7781.webp" alt="Wise Whispers">
+                <div class="overlay">
+                    <h3>Wise Whispers</h3>
+                    <p>A vibrant and detailed owl artwork, symbolizing wisdom and mystery. Rich patterns and bright colors.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="300">
+                <img src="assets/img/IMG_7782.webp" alt="Speak in Colours">
+                <div class="overlay">
+                    <h3>Speak in Colours</h3>
+                    <p>A pop-art inspired piece that expresses freedom of speech and individuality through bright colors and patterns.</p>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                <img src="assets/img/IMG_7783.webp" alt="Mystic Serpent">
+                <div class="overlay">
+                    <h3>Mystic Serpent</h3>
+                    <p>A colorful and decorative snake artwork with soft curves and playful patterns, celebrating the beauty of the form.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        <p class="footer-credit">Handcrafted with <span style="color:var(--gold-accent);">Love</span> for Aggrani</p>
+        <p class="footer-credit" style="font-size: 0.9rem; margin-top: 5px;">Designed & Developed by <b style="color:white;">Keshan Panditharathna</b></p>
+        
+        <p style="font-size: 0.7rem; opacity: 0.5; margin-top: 30px; letter-spacing: 2px;">© 2025 KESHAN PANDITHARATHNA. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+    <script>
+        // AOS Init
+        AOS.init({
+            once: true,
+            offset: 50,
+            duration: 1000,
+            easing: 'ease-out-cubic'
+        });
+
+        // Custom Cursor
+        const cursor = document.getElementById("cursor");
+        const cursorDot = document.getElementById("cursor-dot");
+        document.addEventListener("mousemove", (e) => {
+            cursorDot.style.left = e.clientX + "px";
+            cursorDot.style.top = e.clientY + "px";
+            cursor.animate({
+                left: e.clientX + "px",
+                top: e.clientY + "px"
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Particles Config
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 50, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#d4af37" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.2, "random": true, "anim": { "enable": true, "speed": 0.5, "opacity_min": 0.1, "sync": false } },
+                "size": { "value": 3, "random": true, "anim": { "enable": false } },
+                "line_linked": { "enable": false },
+                "move": { "enable": true, "speed": 0.4, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "bubble" }, "onclick": { "enable": false }, "resize": true },
+                "modes": { "bubble": { "distance": 200, "size": 4, "duration": 2, "opacity": 0.6, "speed": 3 } }
+            },
+            "retina_detect": true
+        });
+    </script>
+</body>
+
+</html>

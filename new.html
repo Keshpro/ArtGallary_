@@ -616,11 +616,7 @@
             <div class="about-text-col" data-aos="fade-left" data-aos-delay="400">
                 <span class="about-eyebrow">The Artist's Soul</span>
                 <h2 class="about-heading">Bold Colours,<br><em>Wild Beauty</em></h2>
-                <p class="about-quote">
-                    "In every hue, a heartbeat.<br>
-                    In every curve, a quiet story.<br>
-                    In every glance, a world of wonder."
-                </p>
+                
                 <div class="about-text">
                     <p>
                         I am <strong>Aggrani Karunarathna</strong>, a 23-year-old emerging artist based in <strong>Christchurch</strong>.
@@ -1207,7 +1203,7 @@
 
                 item.innerHTML = `
                     <div class="image-wrapper">
-                        <img src="${art.imageUrl}" alt="${art.title}">
+                        <img src="${art.imageUrl}" alt="${art.title}" onerror="this.closest('.gallery-item').style.display='none';">
                         <div class="overlay">
                             <h3>${art.title}</h3>
                             <p>${art.description}</p>

@@ -4,9 +4,11 @@ import { useCart } from "@/context/CartContext";
 import { Trash2, ArrowRight, ShoppingBag, ArrowLeft, ShieldCheck, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import { useToast } from "@/context/ToastContext";
 
 export default function CartPage() {
   const { cart, removeFromCart, clearCart } = useCart();
+  const { showToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
@@ -45,11 +47,11 @@ export default function CartPage() {
         setOrderPlaced(true);
         clearCart();
       } else {
-        alert("Acquisition protocol failed. Please check connectivity.");
+        showToast("Acquisition protocol failed. Please check connectivity.", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong during data matrix sync.");
+      showToast("Something went wrong during data matrix sync.", "error");
     } finally {
       setSubmitting(false);
     }

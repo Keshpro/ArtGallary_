@@ -1,23 +1,20 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import { CartProvider } from "@/context/CartContext"; // 🔥 Global Cart Context Layer එක
-
-export const metadata = {
-  title: "Aggrani Portfolio",
-  description: "Premium Minimalist Art Gallery",
-};
+import { CartProvider } from "@/context/CartContext";
+import { ToastProvider } from "@/context/ToastContext"; 
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-zinc-950 text-zinc-100 antialiased" suppressHydrationWarning>
-        {/* මුළු ඇප් එකටම Cart එක වැඩ කරන්න Context එකෙන් Wrap කර ඇත */}
-        <CartProvider>
-          {/* සියලුම පිටුවලට පොදුවේ ඉහළින්ම Navbar එක පෙන්වයි */}
-          <Navbar /> 
-          
-          {children}
-        </CartProvider>
+        {/* 1. ToastProvider එක හැමදේටම පිටින් තැබීම */}
+        <ToastProvider> 
+          {/* 2. CartProvider එක ඒක ඇතුළෙන් තැබීම */}
+          <CartProvider> 
+            <Navbar /> 
+            {children}
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

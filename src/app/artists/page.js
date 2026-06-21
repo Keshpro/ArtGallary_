@@ -151,7 +151,7 @@ function FeaturedWorkCard({ work }) {
           alt={work.title}
           className="h-full w-full object-cover opacity-70 transition duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       </div>
       <div className="border-t border-zinc-900 p-4">
         <span className={`${spaceMono.className} text-[8px] text-zinc-500`}>
@@ -283,7 +283,7 @@ export default function ArtistPage() {
                 style={{ borderColor: "rgba(201,162,75,0.25)" }}
               >
                 <img
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop"
+                  src="/aaa.webp"
                   alt="Lead Artist"
                   className="h-full w-full object-cover grayscale transition duration-700 ease-out group-hover:scale-110 group-hover:grayscale-0"
                 />

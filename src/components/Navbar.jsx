@@ -78,7 +78,7 @@ export default function Navbar() {
             <Palette className="w-5 h-5" style={{ color: GOLD }} />
           </div>
           <span className={`${fraunces.className} font-semibold tracking-wide text-sm md:text-base uppercase`}>
-            <span className="text-zinc-100">Kreative</span>
+            <span className="text-zinc-100">Aggrani</span>
             <span
               style={{
                 background: `linear-gradient(90deg, ${GOLD_SOFT}, ${GOLD})`,
@@ -87,7 +87,7 @@ export default function Navbar() {
                 color: "transparent",
               }}
             >
-              Labs Art
+              Karunarathna
             </span>
           </span>
         </Link>

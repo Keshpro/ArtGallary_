@@ -1,12 +1,13 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { useToast } from "./ToastContext"; // ◀️ නිවැරදිව ලින්ක් කර ඇති බව තහවුරු කරගන්න
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+  const { showToast } = useToast(); // 🔥 මෙතනදී Destructure එක සාර්ථකව සිදුවේ
 
-  // Load cart items from localStorage on initial render
   useEffect(() => {
     const savedCart = localStorage.getItem("aggrani_cart");
     if (savedCart) {
@@ -14,7 +15,6 @@ export function CartProvider({ children }) {
     }
   }, []);
 
-  // Sync cart items with localStorage whenever it changes
   const saveCart = (newCart) => {
     setCart(newCart);
     localStorage.setItem("aggrani_cart", JSON.stringify(newCart));
@@ -23,12 +23,14 @@ export function CartProvider({ children }) {
   const addToCart = (art) => {
     const exists = cart.find((item) => item.id === art.id);
     if (exists) {
-      alert(`${art.title} is already in your curation cart!`);
+      // 🔄 පරණ alert වෙනුවට modern error toast එක
+      showToast(`${art.title} is already in your curation cart!`, "error");
       return;
     }
     const newCart = [...cart, art];
     saveCart(newCart);
-    alert(`${art.title} added to curation cart. 🪐`);
+    // 🔄 පරණ alert වෙනුවට modern success toast එක
+    showToast(`${art.title} added to curation cart. 🪐`, "success");
   };
 
   const removeFromCart = (id) => {

@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import ImageUploader from "@/components/ImageUploader";
-import { PlusCircle, Trash2, Edit3, Package, Layers, Bell, Eye, Check, XCircle } from "lucide-react";
+import { PlusCircle, Trash2, Edit3, Package, Layers, Bell, Check, XCircle } from "lucide-react";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("artworks");
+  const [activeTab, setActiveTab] = useState("products");
   
-  // States for Artwork CRUD
-  const [artworks, setArtworks] = useState([]);
+  // States for Product CRUD
+  const [products, setProducts] = useState([]);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [size, setSize] = useState(""); 
@@ -21,37 +21,31 @@ export default function AdminDashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  // States for Carousel Management
-  const [cTitle, setCTitle] = useState("");
-  const [cSubtitle, setCSubtitle] = useState("");
-  const [cImage, setCImage] = useState("");
-  const [savingCarousel, setSavingCarousel] = useState(false);
-
   // States for Orders Tracking
   const [orders, setOrders] = useState([]);
 
   // Fetch Live Data from Firebase Firestore
   useEffect(() => {
-    const unsubArt = onSnapshot(collection(db, "artworks"), (snap) => {
-      setArtworks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const unsubProducts = onSnapshot(collection(db, "products"), (snap) => {
+      setProducts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     const unsubOrders = onSnapshot(collection(db, "orders"), (snap) => {
       setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => { unsubArt(); unsubOrders(); };
+    return () => { unsubProducts(); unsubOrders(); };
   }, []);
 
   // Trigger Edit Mode (Form එකට සහ Uploader එකට ස්වයංක්‍රීයව පරණ පින්තූරය ඇතුළු සියලුම Data ලබාදීම)
-  const startEditArtwork = (art) => {
+  const startEditProduct = (product) => {
     setIsEditing(true);
-    setEditId(art.id);
-    setTitle(art.title);
-    setPrice(art.price);
-    setSize(art.size || ""); 
-    setDescription(art.description);
+    setEditId(product.id);
+    setTitle(product.title);
+    setPrice(product.price);
+    setSize(product.size || ""); 
+    setDescription(product.description);
     
-    // 🔥 මෙතැනදී Image URL එක සෙට් කරන නිසා ImageUploader එක ඇතුළේ පින්තූරය ලස්සනට පෙන්වයි
-    setImageUrl(art.imageUrl);
+    // Image URL එක සෙට් කරන නිසා ImageUploader එක ඇතුළේ පින්තූරය පෙන්වයි
+    setImageUrl(product.imageUrl);
     
     // Smoothly scroll back to top form for easy editing
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -64,7 +58,7 @@ export default function AdminDashboard() {
     setTitle(""); setPrice(""); setSize(""); setDescription(""); setImageUrl("");
   };
 
-  // CRUD: Add OR Update Artwork Handler
+  // CRUD: Add OR Update Product Handler
   const handleArtworkSubmit = async (e) => {
     e.preventDefault();
     
@@ -77,13 +71,13 @@ export default function AdminDashboard() {
 
     try {
       if (isEditing) {
-        // 🛠️ UPDATE EXISTING ARTWORK WORKFLOW
-        const artRef = doc(db, "artworks", editId);
+        // 🛠️ UPDATE EXISTING PRODUCT WORKFLOW
+        const productRef = doc(db, "products", editId);
         
-        // ස්මාර්ට් චෙක් එක: යූසර් අලුත් ඉමේජ් එකක් දැම්මොත් ඒක ගන්නවා, නැත්නම් පරණ එකම තියාගන්නවා
-        const finalImageUrl = imageUrl || artworks.find(art => art.id === editId)?.imageUrl;
+        // ස්මාර්ට් චෙක් එක: යූසර් අලුත් ඉමේජ් එකක් දැමූවොත් ඒක ගන්නවා, නැත්නම් පරණ එකම තියාගන්නවා
+        const finalImageUrl = imageUrl || products.find(product => product.id === editId)?.imageUrl;
 
-        await updateDoc(artRef, {
+        await updateDoc(productRef, {
           title,
           price: parseFloat(price) || 0,
           size, 
@@ -94,8 +88,8 @@ export default function AdminDashboard() {
         alert("Masterpiece Updated Successfully! 🔥");
         cancelEdit();
       } else {
-        // ➕ CREATE NEW ARTWORK WORKFLOW
-        await addDoc(collection(db, "artworks"), { 
+        // ➕ CREATE NEW PRODUCT WORKFLOW
+        await addDoc(collection(db, "products"), { 
           title, 
           price: parseFloat(price) || 0, 
           size, 
@@ -115,24 +109,12 @@ export default function AdminDashboard() {
     }
   };
 
-  // CRUD: Delete Artwork
-  const handleDeleteArtwork = async (id) => {
+  // CRUD: Delete Product
+  const handleDeleteProduct = async (id) => {
     if (confirm("Delete this masterpiece permanently?")) {
-      await deleteDoc(doc(db, "artworks", id));
+      await deleteDoc(doc(db, "products", id));
       if (isEditing && editId === id) cancelEdit();
     }
-  };
-
-  // Carousel: Add Slide Announcement
-  const handleAddCarousel = async (e) => {
-    e.preventDefault();
-    if (!cImage) return alert("Upload promotional image first!");
-    setSavingCarousel(true);
-    try {
-      await addDoc(collection(db, "carousel"), { title: cTitle, subtitle: cSubtitle, image: cImage });
-      alert("Featured Announcement Live!");
-      setCTitle(""); setCSubtitle(""); setCImage("");
-    } catch (err) { console.error(err); } finally { setSavingCarousel(false); }
   };
 
   // Orders: Update Delivery Status
@@ -148,11 +130,8 @@ export default function AdminDashboard() {
       <aside className="w-full md:w-64 bg-zinc-950 border-r border-zinc-900/60 p-6 space-y-2 flex-shrink-0">
         <h1 className="text-sm font-black tracking-widest text-amber-500 uppercase mb-6 flex items-center gap-2"><Layers className="w-4 h-4" /> Admin Console</h1>
         
-        <button onClick={() => setActiveTab("artworks")} className={`w-full flex items-center gap-3 text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "artworks" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
-          <Package className="w-4 h-4" /> Manage Artworks
-        </button>
-        <button onClick={() => setActiveTab("carousel")} className={`w-full flex items-center gap-3 text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "carousel" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
-          <Eye className="w-4 h-4" /> Carousel Billboard
+        <button onClick={() => setActiveTab("products")} className={`w-full flex items-center gap-3 text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "products" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
+          <Package className="w-4 h-4" /> Manage Products
         </button>
         <button onClick={() => setActiveTab("orders")} className={`w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "orders" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
           <span className="flex items-center gap-3"><Bell className="w-4 h-4" /> Acquisition Orders</span>
@@ -167,8 +146,8 @@ export default function AdminDashboard() {
       {/* RIGHT WORKSPACE CONSOLE */}
       <main className="flex-1 p-6 md:p-12 overflow-y-auto max-w-5xl">
         
-        {/* TAB 1: ARTWORKS CRUD MANAGER */}
-        {activeTab === "artworks" && (
+        {/* TAB 1: PRODUCTS CRUD MANAGER */}
+        {activeTab === "products" && (
           <div className="space-y-12">
             
             {/* Control Block Form */}
@@ -211,7 +190,6 @@ export default function AdminDashboard() {
                 <div>
                   <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Canvas Frame Synchronization</label>
                   
-                  {/* 🔥 මෙතැනදී existingImage={imageUrl} එක ලබා දී ඇති නිසා Preview එක සාර්ථකව ක්‍රියාත්මක වේ */}
                   <ImageUploader 
                     onUploadSuccess={url => setImageUrl(url)} 
                     existingImage={imageUrl} 
@@ -229,7 +207,8 @@ export default function AdminDashboard() {
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">Active Live Inventory</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {artworks.map((art) => (
+                {/* 🔥 මෙතැනදී පරණ artworks වෙනුවට products ලෙස නිවැරදිව සිතියම්ගත (Map) කර ඇත */}
+                {products.map((art) => (
                   <div key={art.id} className={`bg-zinc-900/10 border rounded-2xl overflow-hidden p-4 flex gap-4 items-center justify-between transition duration-300 ${editId === art.id ? "border-amber-500/60 bg-zinc-900/30 shadow-md" : "border-zinc-900"}`}>
                     <div className="flex items-center gap-3 min-w-0">
                       <img src={art.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-950 border border-zinc-900 flex-shrink-0" />
@@ -242,10 +221,10 @@ export default function AdminDashboard() {
                     
                     {/* Action Controls */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <button onClick={() => startEditArtwork(art)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-500 hover:text-amber-400 hover:border-amber-500/20 transition">
+                      <button onClick={() => startEditProduct(art)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-500 hover:text-amber-400 hover:border-amber-500/20 transition">
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDeleteArtwork(art.id)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-600 hover:text-red-400 hover:border-red-500/20 transition">
+                      <button onClick={() => handleDeleteProduct(art.id)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-600 hover:text-red-400 hover:border-red-500/20 transition">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -256,32 +235,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 2: CAROUSEL PROMOTIONAL MANAGER */}
-        {activeTab === "carousel" && (
-          <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-900 rounded-2xl p-6 shadow-xl max-w-xl">
-            <h2 className="text-base font-black uppercase text-zinc-200 tracking-tight mb-4">Billboard Ad & Announcement Curating</h2>
-            <form onSubmit={handleAddCarousel} className="space-y-4">
-              <div>
-                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Headline</label>
-                <input type="text" required value={cTitle} onChange={e => setCTitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="e.g., Midnight Auction Exhibition" />
-              </div>
-              <div>
-                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Sub-headline Description</label>
-                <input type="text" required value={cSubtitle} onChange={e => setCSubtitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="Promo subtitles..." />
-              </div>
-              <div>
-                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Billboard Graphics Sync</label>
-                {/* Carousel එකටත් existing image logic එක ඕනෙ නම් වෙනම දැමිය හැක */}
-                <ImageUploader onUploadSuccess={url => setCImage(url)} existingImage={cImage} />
-              </div>
-              <button type="submit" disabled={savingCarousel} className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-amber-400 font-bold text-xs uppercase tracking-wider py-3 rounded-xl transition disabled:opacity-40">
-                {savingCarousel ? "Syncing Announcement..." : "Inject To Live Billboard"}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* TAB 3: LIVE ORDER TRACKER */}
+        {/* TAB 2: LIVE ORDER TRACKER */}
         {activeTab === "orders" && (
           <div className="space-y-4">
             <h2 className="text-base font-black uppercase text-zinc-200 tracking-tight mb-4">Live Acquisition Invoices</h2>

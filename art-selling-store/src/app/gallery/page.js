@@ -27,7 +27,7 @@ export default function GalleryPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    const q = query(collection(db, "artworks"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const artList = snapshot.docs.map((doc) => ({
         id: doc.id,

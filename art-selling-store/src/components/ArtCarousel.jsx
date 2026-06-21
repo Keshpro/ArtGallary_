@@ -1,45 +1,40 @@
 "use client";
 import { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
-import { collection, onSnapshot } from "firebase/firestore";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// 🔥 ඇඩ්මින් පැනල් එකෙන් තොරව ස්ථාවරව ක්‍රියාත්මක වන ප්‍රිමියම් කැරූසල් දත්ත පද්ධතිය
+const STATIC_SLIDES = [
+  {
+    id: "slide-1",
+    title: "Midnight Auction Exhibition",
+    subtitle: "Experience the ultimate architectural curation of modern abstract masterpieces and graphite canvas structures.",
+    image: "https://images.unsplash.com/photo-1549887534-1541e9326642?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "slide-2",
+    title: "The Golden Era Collection",
+    subtitle: "Exclusive minimalist portrait frames and original physical heirlooms now open for private studio acquisition.",
+    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=1200&auto=format&fit=crop"
+  },
+  {
+    id: "slide-3",
+    title: "Spatial Texture Symphony",
+    subtitle: "Handcrafted using archival materials designed to elevate high-end bistros, corporate lounges, and luxury spaces.",
+    image: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1200&auto=format&fit=crop"
+  }
+];
+
 export default function ArtCarousel() {
-  const [slides, setSlides] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    // 🔥 Firebase collection එක 'carousel' ලෙස නිවැරදිව Sync කිරීම
-    const unsubscribe = onSnapshot(collection(db, "carousel"), (snapshot) => {
-      const slideList = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      }));
-      setSlides(slideList);
-    });
-    return () => unsubscribe();
-  }, []);
+  const prevSlide = () => setCurrentIndex((prev) => (prev === 0 ? STATIC_SLIDES.length - 1 : prev - 1));
+  const nextSlide = () => setCurrentIndex((prev) => (prev === STATIC_SLIDES.length - 1 ? 0 : prev + 1));
 
-  const prevSlide = () => setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  const nextSlide = () => setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-
+  // ස්වයංක්‍රීයව තත්පර 5න් 5ට ස්ලයිඩර් එක මාරු වීමේ ලොජික් එක
   useEffect(() => {
-    if (slides.length === 0) return;
     const slideInterval = setInterval(nextSlide, 5000);
     return () => clearInterval(slideInterval);
-  }, [currentIndex, slides]);
-
-  // Carousel එකේ ඩේටා නැතිනම් පෙන්වන පිරිසිදු Loading ස්ටේට් එක
-  if (slides.length === 0) {
-    return (
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <div className="w-full h-[250px] md:h-[350px] rounded-2xl bg-zinc-900/10 border border-zinc-900 animate-pulse flex flex-col items-center justify-center gap-2 text-xs text-zinc-500 font-medium tracking-wide">
-          <div className="w-5 h-5 border border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span>SYNCHRONIZING RECENT BILLBOARD EXHIBITIONS...</span>
-        </div>
-      </div>
-    );
-  }
+  }, [currentIndex]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-6 relative group select-none">
@@ -50,15 +45,14 @@ export default function ArtCarousel() {
           className="w-full h-full flex transition-transform duration-700 ease-out" 
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
-          {slides.map((slide) => (
+          {STATIC_SLIDES.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative flex-shrink-0">
               {/* Dark Glassy Overlay */}
               <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent z-10" />
               
-              {/* 🔥 ඩෑෂ්බෝඩ් එකෙන් දාන slide.image එක හරියටම මෙතනින් කියවයි */}
               <img 
                 src={slide.image} 
-                alt={slide.title || "Announcement"} 
+                alt={slide.title} 
                 className="w-full h-full object-cover opacity-50 transition-scale duration-500 group-hover:scale-[1.01]" 
               />
               

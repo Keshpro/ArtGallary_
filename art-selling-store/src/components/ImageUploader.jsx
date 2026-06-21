@@ -26,7 +26,7 @@ export default function ImageUploader({ onUploadSuccess, existingImage }) {
     setLoading(true);
     setIsSuccess(false);
 
-    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    const apiKey = "7dc0be16402b01ab2800a3eeb080c14a";
 
     if (!apiKey || apiKey === "undefined") {
       console.error("ImgBB API Key is missing!");
@@ -66,7 +66,7 @@ export default function ImageUploader({ onUploadSuccess, existingImage }) {
     <div className="flex flex-col items-center justify-center border border-zinc-800 bg-zinc-900/20 backdrop-blur-md rounded-2xl p-5 transition-all duration-300 hover:border-amber-500/30 relative overflow-hidden">
       
       {preview ? (
-        <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-zinc-950 border border-zinc-900">
+        <div className="relative w-full aspect-16/10 rounded-xl overflow-hidden bg-zinc-950 border border-zinc-900">
           <img 
             src={preview} 
             alt="Artwork live preview" 

@@ -1,22 +1,23 @@
-import { Geist, Geist_Mono ,Inter} from "next/font/google";
 import "./globals.css";
-
-import Navbar from "@/components/Navbar"; 
-
-const inter = Inter({ subsets: ["latin"] });
+import Navbar from "@/components/Navbar";
+import { CartProvider } from "@/context/CartContext"; // 🔥 Global Cart Context Layer එක
 
 export const metadata = {
-  title: "Premium Art Store",
-  description: "Next-Level Art Selling Platform",
+  title: "Aggrani Portfolio",
+  description: "Premium Minimalist Art Gallery",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-zinc-950 text-zinc-100 antialiased`}>
-        {/* 2. CHILDREN (PAGES) වලට උඩින් NAVBAR එක දාන්න */}
-        <Navbar />
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-zinc-950 text-zinc-100 antialiased" suppressHydrationWarning>
+        {/* මුළු ඇප් එකටම Cart එක වැඩ කරන්න Context එකෙන් Wrap කර ඇත */}
+        <CartProvider>
+          {/* සියලුම පිටුවලට පොදුවේ ඉහළින්ම Navbar එක පෙන්වයි */}
+          <Navbar /> 
+          
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

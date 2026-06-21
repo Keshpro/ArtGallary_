@@ -506,7 +506,7 @@ export default function Home() {
           <div className="w-full bg-linear-to-br from-zinc-900/40 to-zinc-950 border border-zinc-900/60 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-xl">
             <div className="group relative w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 flex-shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop"
+                src="/aaa.webp"
                 alt="Lead Artist Profile"
                 className="w-full h-full object-cover grayscale transition duration-700 ease-out group-hover:scale-110 group-hover:grayscale-0"
               />

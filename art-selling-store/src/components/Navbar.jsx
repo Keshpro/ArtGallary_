@@ -11,7 +11,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         
         {/* LOGO AREA */}
-        <Link href="/gallery" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 group-hover:border-amber-500/40 transition duration-300">
             <Palette className="w-5 h-5 text-amber-500" />
           </div>
@@ -22,7 +22,7 @@ export default function Navbar() {
 
         {/* DESKTOP NAVIGATION LINKS */}
         <div className="hidden md:flex items-center gap-8 text-xs font-semibold uppercase tracking-widest text-zinc-400">
-          <Link href="/gal" className="hover:text-amber-400 transition duration-200">Gallery</Link>
+          <Link href="/gallery" className="hover:text-amber-400 transition duration-200">Gallery</Link>
           <Link href="/artists" className="hover:text-amber-400 transition duration-200">Artists</Link>
           <Link href="/about" className="hover:text-amber-400 transition duration-200">About</Link>
           <Link href="/contact" className="hover:text-amber-400 transition duration-200">Contact</Link>

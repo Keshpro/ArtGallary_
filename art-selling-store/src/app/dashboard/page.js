@@ -1,100 +1,318 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import ImageUploader from "@/components/ImageUploader";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2, Edit3, Package, Layers, Bell, Eye, Check, XCircle } from "lucide-react";
 
-export default function Dashboard() {
+export default function AdminDashboard() {
+  const [activeTab, setActiveTab] = useState("artworks");
+  
+  // States for Artwork CRUD
+  const [artworks, setArtworks] = useState([]);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
+  const [size, setSize] = useState(""); 
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [savingArt, setSavingArt] = useState(false);
+  
+  // Edit State Management
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
 
-  const handleSubmit = async (e) => {
+  // States for Carousel Management
+  const [cTitle, setCTitle] = useState("");
+  const [cSubtitle, setCSubtitle] = useState("");
+  const [cImage, setCImage] = useState("");
+  const [savingCarousel, setSavingCarousel] = useState(false);
+
+  // States for Orders Tracking
+  const [orders, setOrders] = useState([]);
+
+  // Fetch Live Data from Firebase Firestore
+  useEffect(() => {
+    const unsubArt = onSnapshot(collection(db, "artworks"), (snap) => {
+      setArtworks(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    const unsubOrders = onSnapshot(collection(db, "orders"), (snap) => {
+      setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => { unsubArt(); unsubOrders(); };
+  }, []);
+
+  // Trigger Edit Mode (Form එකට සහ Uploader එකට ස්වයංක්‍රීයව පරණ පින්තූරය ඇතුළු සියලුම Data ලබාදීම)
+  const startEditArtwork = (art) => {
+    setIsEditing(true);
+    setEditId(art.id);
+    setTitle(art.title);
+    setPrice(art.price);
+    setSize(art.size || ""); 
+    setDescription(art.description);
+    
+    // 🔥 මෙතැනදී Image URL එක සෙට් කරන නිසා ImageUploader එක ඇතුළේ පින්තූරය ලස්සනට පෙන්වයි
+    setImageUrl(art.imageUrl);
+    
+    // Smoothly scroll back to top form for easy editing
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Cancel Edit Mode & Reset Form Fields
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditId(null);
+    setTitle(""); setPrice(""); setSize(""); setDescription(""); setImageUrl("");
+  };
+
+  // CRUD: Add OR Update Artwork Handler
+  const handleArtworkSubmit = async (e) => {
     e.preventDefault();
-    if (!imageUrl) {
-      alert("Please upload an image first!");
-      return;
+    
+    // CREATE කරද්දී විතරක් ඉමේජ් එක අනිවාර්ය කිරීම (Edit කරද්දී පරණ එකම ගන්නවා)
+    if (!isEditing && !imageUrl) {
+      return alert("Upload image first!");
     }
-
-    setSaving(true);
+    
+    setSavingArt(true);
 
     try {
-      // Save data into Firebase Firestore 'artworks' collection
-      await addDoc(collection(db, "artworks"), {
-        title,
-        price: parseFloat(price),
-        description,
-        imageUrl,
-        createdAt: serverTimestamp(),
-      });
+      if (isEditing) {
+        // 🛠️ UPDATE EXISTING ARTWORK WORKFLOW
+        const artRef = doc(db, "artworks", editId);
+        
+        // ස්මාර්ට් චෙක් එක: යූසර් අලුත් ඉමේජ් එකක් දැම්මොත් ඒක ගන්නවා, නැත්නම් පරණ එකම තියාගන්නවා
+        const finalImageUrl = imageUrl || artworks.find(art => art.id === editId)?.imageUrl;
 
-      alert("Artwork added to catalog successfully! 🔥");
-      // Reset Form
-      setTitle("");
-      setPrice("");
-      setDescription("");
-      setImageUrl("");
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      alert("Error saving data to database.");
-    } finally {
-      setSaving(false);
+        await updateDoc(artRef, {
+          title,
+          price: parseFloat(price) || 0,
+          size, 
+          description,
+          imageUrl: finalImageUrl, 
+          updatedAt: serverTimestamp()
+        });
+        alert("Masterpiece Updated Successfully! 🔥");
+        cancelEdit();
+      } else {
+        // ➕ CREATE NEW ARTWORK WORKFLOW
+        await addDoc(collection(db, "artworks"), { 
+          title, 
+          price: parseFloat(price) || 0, 
+          size, 
+          description, 
+          imageUrl, 
+          createdAt: serverTimestamp(),
+          reviews: [] 
+        });
+        alert("New Masterpiece Published!");
+        setTitle(""); setPrice(""); setSize(""); setDescription(""); setImageUrl("");
+      }
+    } catch (err) { 
+      console.error(err); 
+      alert("Error saving data to cloud matrix.");
+    } finally { 
+      setSavingArt(false); 
     }
   };
 
+  // CRUD: Delete Artwork
+  const handleDeleteArtwork = async (id) => {
+    if (confirm("Delete this masterpiece permanently?")) {
+      await deleteDoc(doc(db, "artworks", id));
+      if (isEditing && editId === id) cancelEdit();
+    }
+  };
+
+  // Carousel: Add Slide Announcement
+  const handleAddCarousel = async (e) => {
+    e.preventDefault();
+    if (!cImage) return alert("Upload promotional image first!");
+    setSavingCarousel(true);
+    try {
+      await addDoc(collection(db, "carousel"), { title: cTitle, subtitle: cSubtitle, image: cImage });
+      alert("Featured Announcement Live!");
+      setCTitle(""); setCSubtitle(""); setCImage("");
+    } catch (err) { console.error(err); } finally { setSavingCarousel(false); }
+  };
+
+  // Orders: Update Delivery Status
+  const handleUpdateOrderStatus = async (id, currentStatus) => {
+    const nextStatus = currentStatus === "Pending" ? "Shipped" : "Delivered";
+    await updateDoc(doc(db, "orders", id), { status: nextStatus });
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500 bg-clip-text text-transparent mb-2">
-          Creator Dashboard
-        </h1>
-        <p className="text-sm text-zinc-400 mb-6">Add a new premium masterpiece to your active catalog.</p>
+    <div className="min-h-screen bg-[#070708] text-zinc-100 font-sans antialiased flex flex-col md:flex-row">
+      
+      {/* LEFT NAVIGATION CONSOLE (TAB BAR) */}
+      <aside className="w-full md:w-64 bg-zinc-950 border-r border-zinc-900/60 p-6 space-y-2 flex-shrink-0">
+        <h1 className="text-sm font-black tracking-widest text-amber-500 uppercase mb-6 flex items-center gap-2"><Layers className="w-4 h-4" /> Admin Console</h1>
+        
+        <button onClick={() => setActiveTab("artworks")} className={`w-full flex items-center gap-3 text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "artworks" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
+          <Package className="w-4 h-4" /> Manage Artworks
+        </button>
+        <button onClick={() => setActiveTab("carousel")} className={`w-full flex items-center gap-3 text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "carousel" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
+          <Eye className="w-4 h-4" /> Carousel Billboard
+        </button>
+        <button onClick={() => setActiveTab("orders")} className={`w-full flex items-center justify-between text-xs font-bold uppercase tracking-wider px-4 py-3 rounded-xl transition ${activeTab === "orders" ? "bg-zinc-900 text-amber-400 border border-zinc-800" : "text-zinc-500 hover:text-zinc-300"}`}>
+          <span className="flex items-center gap-3"><Bell className="w-4 h-4" /> Acquisition Orders</span>
+          {orders.filter(o => o.status === "Pending").length > 0 && (
+            <span className="bg-amber-500 text-black font-mono font-bold text-[10px] px-2 py-0.5 rounded-full shadow-sm">
+              {orders.filter(o => o.status === "Pending").length}
+            </span>
+          )}
+        </button>
+      </aside>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Artwork Image</label>
-            <ImageUploader onUploadSuccess={(url) => setImageUrl(url)} />
+      {/* RIGHT WORKSPACE CONSOLE */}
+      <main className="flex-1 p-6 md:p-12 overflow-y-auto max-w-5xl">
+        
+        {/* TAB 1: ARTWORKS CRUD MANAGER */}
+        {activeTab === "artworks" && (
+          <div className="space-y-12">
+            
+            {/* Control Block Form */}
+            <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-900 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-black uppercase text-zinc-200 tracking-tight">
+                  {isEditing ? "⚙️ Edit Mode: Update Masterpiece" : "Publish New Masterpiece"}
+                </h2>
+                {isEditing && (
+                  <button type="button" onClick={cancelEdit} className="text-[10px] font-bold uppercase text-zinc-500 hover:text-red-400 transition flex items-center gap-1">
+                    <XCircle className="w-3.5 h-3.5" /> Cancel Edit
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleArtworkSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Title</label>
+                    <input type="text" required value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="e.g., Midnight Veil" />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Value (LKR)</label>
+                      <input type="number" required value={price} onChange={e => setPrice(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="0.00" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Dimensions / Size</label>
+                      <input type="text" required value={size} onChange={e => setSize(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="e.g., 24x36 Canvas" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Description</label>
+                    <textarea rows={3} required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition resize-none" placeholder="Curation notes..." />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Canvas Frame Synchronization</label>
+                  
+                  {/* 🔥 මෙතැනදී existingImage={imageUrl} එක ලබා දී ඇති නිසා Preview එක සාර්ථකව ක්‍රියාත්මක වේ */}
+                  <ImageUploader 
+                    onUploadSuccess={url => setImageUrl(url)} 
+                    existingImage={imageUrl} 
+                  />
+
+                  <button type="submit" disabled={savingArt} className={`w-full mt-4 text-black font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-40 shadow-md ${isEditing ? "bg-linear-to-r from-teal-400 to-emerald-500" : "bg-linear-to-r from-amber-500 to-amber-600"}`}>
+                    <PlusCircle className="w-4 h-4" /> 
+                    {savingArt ? "Saving Data..." : isEditing ? "Update Masterpiece" : "Publish Masterpiece"}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Catalog Grid View */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">Active Live Inventory</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {artworks.map((art) => (
+                  <div key={art.id} className={`bg-zinc-900/10 border rounded-2xl overflow-hidden p-4 flex gap-4 items-center justify-between transition duration-300 ${editId === art.id ? "border-amber-500/60 bg-zinc-900/30 shadow-md" : "border-zinc-900"}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img src={art.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-950 border border-zinc-900 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-200 truncate">{art.title}</h4>
+                        <p className="text-[9px] text-zinc-500 font-mono truncate">Size: {art.size || "Bespoke"}</p>
+                        <span className="text-[10px] font-mono text-amber-500">LKR {art.price?.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Action Controls */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button onClick={() => startEditArtwork(art)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-500 hover:text-amber-400 hover:border-amber-500/20 transition">
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => handleDeleteArtwork(art.id)} className="p-2 rounded-xl bg-zinc-950 border border-zinc-900 text-zinc-600 hover:text-red-400 hover:border-red-500/20 transition">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+        )}
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Artwork Title</label>
-            <input 
-              type="text" required value={title} onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200"
-              placeholder="e.g., Whispering Canvas"
-            />
+        {/* TAB 2: CAROUSEL PROMOTIONAL MANAGER */}
+        {activeTab === "carousel" && (
+          <div className="bg-zinc-900/20 backdrop-blur-md border border-zinc-900 rounded-2xl p-6 shadow-xl max-w-xl">
+            <h2 className="text-base font-black uppercase text-zinc-200 tracking-tight mb-4">Billboard Ad & Announcement Curating</h2>
+            <form onSubmit={handleAddCarousel} className="space-y-4">
+              <div>
+                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Headline</label>
+                <input type="text" required value={cTitle} onChange={e => setCTitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="e.g., Midnight Auction Exhibition" />
+              </div>
+              <div>
+                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Sub-headline Description</label>
+                <input type="text" required value={cSubtitle} onChange={e => setCSubtitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="Promo subtitles..." />
+              </div>
+              <div>
+                <label className="block text-[9px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Billboard Graphics Sync</label>
+                {/* Carousel එකටත් existing image logic එක ඕනෙ නම් වෙනම දැමිය හැක */}
+                <ImageUploader onUploadSuccess={url => setCImage(url)} existingImage={cImage} />
+              </div>
+              <button type="submit" disabled={savingCarousel} className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-amber-400 font-bold text-xs uppercase tracking-wider py-3 rounded-xl transition disabled:opacity-40">
+                {savingCarousel ? "Syncing Announcement..." : "Inject To Live Billboard"}
+              </button>
+            </form>
           </div>
+        )}
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Price (LKR / USD)</label>
-            <input 
-              type="number" required value={price} onChange={(e) => setPrice(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200"
-              placeholder="0.00"
-            />
+        {/* TAB 3: LIVE ORDER TRACKER */}
+        {activeTab === "orders" && (
+          <div className="space-y-4">
+            <h2 className="text-base font-black uppercase text-zinc-200 tracking-tight mb-4">Live Acquisition Invoices</h2>
+            {orders.length === 0 ? (
+              <p className="text-zinc-600 text-xs tracking-wide">NO LIVE INVOICES RECORDED YET.</p>
+            ) : (
+              <div className="space-y-3">
+                {orders.map((order) => (
+                  <div key={order.id} className="bg-zinc-900/10 border border-zinc-900 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-black text-zinc-100">{order.customerName}</span>
+                        <span className={`text-[8px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md ${order.status === "Pending" ? "bg-amber-500/10 border border-amber-500/20 text-amber-400" : order.status === "Shipped" ? "bg-blue-500/10 border border-blue-500/20 text-blue-400" : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"}`}>{order.status}</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-400">Acquiring: <span className="text-zinc-200 font-bold">{order.artworkTitle}</span> &bull; Value: <span className="font-mono text-amber-400">LKR {order.price?.toLocaleString()}</span></p>
+                      <p className="text-[10px] text-zinc-500">Contact: {order.customerPhone} | Destination: {order.customerAddress}</p>
+                    </div>
+                    {order.status !== "Delivered" && (
+                      <button onClick={() => handleUpdateOrderStatus(order.id, order.status)} className="flex items-center gap-1 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl transition text-zinc-300">
+                        <Check className="w-3.5 h-3.5 text-amber-500" />
+                        {order.status === "Pending" ? "Mark As Shipped" : "Mark As Delivered"}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        )}
 
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400 mb-2">Description</label>
-            <textarea 
-              required rows={4} value={description} onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200 resize-none"
-              placeholder="Describe the depth and inspiration behind this piece..."
-            />
-          </div>
-
-          <button 
-            type="submit" disabled={saving}
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition duration-200 shadow-lg shadow-amber-500/10 active:scale-[0.99] disabled:opacity-50"
-          >
-            <PlusCircle className="w-5 h-5" />
-            {saving ? "Saving Masterpiece..." : "Publish Artwork"}
-          </button>
-        </form>
-      </div>
+      </main>
     </div>
   );
 }

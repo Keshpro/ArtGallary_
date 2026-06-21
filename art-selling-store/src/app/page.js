@@ -171,9 +171,9 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {artworks.slice(0, visibleCount).map((art) => (
                 <div key={art.id} className="group bg-zinc-900/20 backdrop-blur-md border border-zinc-900/80 rounded-2xl overflow-hidden transition-all duration-500 hover:border-zinc-700/60 shadow-lg">
-                  <div className="relative aspect-[4/5] w-full bg-[#0d0d0f] overflow-hidden border-b border-zinc-950">
+                  <div className="relative aspect-4/5 w-full bg-[#0d0d0f] overflow-hidden border-b border-zinc-950">
                     <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
                   <div className="p-5">
                     <h3 className="text-sm font-bold text-zinc-200 tracking-tight mb-1 group-hover:text-amber-400 transition duration-300 truncate">{art.title}</h3>
@@ -221,7 +221,7 @@ export default function Home() {
           {showcases.map((space) => (
             <div key={space.id} className="relative group aspect-[4/3] rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-900 shadow-md transition-all duration-500 hover:-translate-y-1">
               <img src={space.img} alt={space.space} className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700 ease-out" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/30 to-transparent" />
               <div className="absolute bottom-4 left-4">
                 <span className="text-[8px] uppercase font-bold tracking-widest text-amber-500">Live Installation</span>
                 <h4 className="text-xs font-bold text-zinc-200 mt-0.5">{space.space}</h4>
@@ -233,7 +233,7 @@ export default function Home() {
 
       {/* SECTION 7: MEET THE CREATOR SPOTLIGHT */}
       <section className="max-w-7xl mx-auto px-6 py-10 border-t border-zinc-900/40">
-        <div className="w-full bg-gradient-to-br from-zinc-900/40 to-zinc-950 border border-zinc-900/60 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-xl">
+        <div className="w-full bg-linear-to-br from-zinc-900/40 to-zinc-950 border border-zinc-900/60 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 shadow-xl">
           <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 flex-shrink-0 grayscale hover:grayscale-0 transition duration-500">
             <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" alt="Lead Artist Profile" className="w-full h-full object-cover" />
           </div>
@@ -317,7 +317,7 @@ export default function Home() {
                   <span className="block text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Total Value</span>
                   <span className="text-base font-black font-mono text-amber-500">LKR {selectedArt.price?.toLocaleString()}</span>
                 </div>
-                <button type="submit" disabled={submitting} className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold uppercase tracking-wider px-5 py-3 rounded-xl text-[10px] transition duration-300 disabled:opacity-50 shadow-lg shadow-amber-500/10">
+                <button type="submit" disabled={submitting} className="flex items-center gap-1.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold uppercase tracking-wider px-5 py-3 rounded-xl text-[10px] transition duration-300 disabled:opacity-50 shadow-lg shadow-amber-500/10">
                   {submitting ? "Verifying..." : "Submit Invoice"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>

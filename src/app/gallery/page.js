@@ -1,318 +1,387 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Fraunces, Space_Mono } from "next/font/google";
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { X, ArrowRight, SlidersHorizontal, Sparkles, Grid3X3, Star, MessageSquare, Maximize2 } from "lucide-react";
+import { collection, query, orderBy, onSnapshot, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/context/ToastContext";
+import { 
+  Eye, 
+  ShoppingCart, 
+  X, 
+  Star, 
+  MessageSquare, 
+  User,
+  Building,
+  Send
+} from "lucide-react";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const GOLD = "#C9A24B";
 
 export default function GalleryPage() {
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
   const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Modals & Curation View States
+  // 🔥 Global rating statistics map for all product cards
+  const [ratingStats, setRatingStats] = useState({});
+
+  // Selected Art for Live Preview Panel
   const [selectedArt, setSelectedArt] = useState(null);
-  const [viewingDetails, setViewingDetails] = useState(false);
-  const [buyingMode, setBuyingMode] = useState(false);
+  const [liveComments, setLiveComments] = useState([]);
 
-  // Form Inputs States
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  // 🔥 Review & Comments States
-  const [reviewerName, setReviewerName] = useState("");
-  const [commentText, setCommentText] = useState("");
-  const [ratingValue, setRatingValue] = useState(5);
+  // New Review Form States inside Preview Panel
+  const [revName, setRevName] = useState("");
+  const [revBusiness, setRevBusiness] = useState("");
+  const [revComment, setRevComment] = useState("");
+  const [revRating, setRevRating] = useState(5); // Default 5 Stars
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Fetch Gallery Artworks from Firebase
   useEffect(() => {
     const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const artList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setArtworks(artList);
+      setArtworks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  // 🔥 Average Rating එක ගණනය කරන ලොජික් එක
-  const calculateAverageRating = (reviews) => {
-    if (!reviews || reviews.length === 0) return 5.0;
-    const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-    return (total / reviews.length).toFixed(1);
-  };
-
-  // 🔥 Firebase Submit Review & Comment Handler
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    if (!reviewerName || !commentText) return;
-    setSubmittingReview(true);
-
-    const newReview = {
-      reviewerName,
-      commentText,
-      rating: parseInt(ratingValue),
-      timestamp: new Date().toLocaleDateString("en-US")
-    };
-
-    try {
-      const artRef = doc(db, "artworks", selectedArt.id);
+  // 🔥 FETCH ALL REVIEWS LIVE TO CALCULATE RATINGS FOR EACH CARD ELIYEN
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "reviews"), (snapshot) => {
+      const allReviews = snapshot.docs.map(doc => doc.data());
       
-      // Firestore ArrayUnion හරහා reviews array එකට අලුත් comment එක එකතු කිරීම
-      await updateDoc(artRef, {
-        reviews: arrayUnion(newReview)
+      // Calculate average rating and total counts grouping by productId
+      const statsMap = {};
+      allReviews.forEach(rev => {
+        if (!rev.productId) return;
+        if (!statsMap[rev.productId]) {
+          statsMap[rev.productId] = { totalStars: 0, count: 0 };
+        }
+        statsMap[rev.productId].totalStars += rev.rating || 5;
+        statsMap[rev.productId].count += 1;
       });
 
-      // Local State එක ක්ෂණිකව අප්ඩේට් කිරීම
-      setSelectedArt((prev) => ({
-        ...prev,
-        reviews: prev.reviews ? [...prev.reviews, newReview] : [newReview]
-      }));
+      // Format matrix into average float decimals
+      const finalStats = {};
+      Object.keys(statsMap).forEach(pId => {
+        const avg = statsMap[pId].totalStars / statsMap[pId].count;
+        finalStats[pId] = {
+          average: avg.toFixed(1),
+          count: statsMap[pId].count
+        };
+      });
 
-      setReviewerName("");
-      setCommentText("");
-      alert("Your curation critique has been added! ✨");
+      setRatingStats(finalStats);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch Live Comments & Ratings for the Selected Artwork Drawer
+  useEffect(() => {
+    if (!selectedArt) {
+      setLiveComments([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, "reviews"), 
+      where("productId", "==", selectedArt.id),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setLiveComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.warn("Comment sorting requires an index, loading un-indexed fallback.", error);
+      const fallbackQuery = query(collection(db, "reviews"), where("productId", "==", selectedArt.id));
+      onSnapshot(fallbackQuery, (snap) => {
+        setLiveComments(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+    });
+
+    return () => unsubscribe();
+  }, [selectedArt]);
+
+  // Handle Review Submission from the Preview Panel
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!revName.trim() || !revComment.trim()) {
+      showToast("Please fill in all required fields.", "error");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      await addDoc(collection(db, "reviews"), {
+        productId: selectedArt.id,
+        name: revName,
+        businessName: revBusiness || null,
+        comment: revComment,
+        rating: revRating,
+        createdAt: serverTimestamp()
+      });
+      showToast("Review attached to this masterpiece successfully!", "success");
+      setRevName(""); setRevBusiness(""); setRevComment(""); setRevRating(5);
     } catch (err) {
       console.error(err);
-      alert("Failed to submit review.");
+      showToast("Error publishing review.", "error");
     } finally {
       setSubmittingReview(false);
     }
   };
 
-  // Handle Acquisition/Checkout Invoice
-  const handleCheckout = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    const orderData = {
-      customerName: name,
-      customerEmail: email,
-      customerPhone: phone,
-      customerAddress: address,
-      artworkId: selectedArt.id,
-      artworkTitle: selectedArt.title,
-      price: selectedArt.price,
-    };
-
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-
-      if (response.ok) {
-        alert("Invoice generated! Check your email. 🚀");
-        setName(""); setEmail(""); setPhone(""); setAddress(""); 
-        setBuyingMode(false); setViewingDetails(false); setSelectedArt(null);
-      } else {
-        alert("Failed to process order.");
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-[#070708] text-zinc-100 selection:bg-amber-500/20 font-sans antialiased pb-24">
+    <div className="min-h-screen bg-[#070708] text-zinc-100 px-6 py-12 relative overflow-x-hidden">
       
-      {/* HERO BANNER AREA */}
-      <div className="relative w-full h-[220px] bg-zinc-900/10 border-b border-zinc-900/30 flex items-center justify-center text-center px-6">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/5 via-transparent to-transparent" />
-        <h1 className="text-3xl md:text-5xl font-black mt-3 bg-linear-to-r from-zinc-100 via-zinc-300 to-zinc-500 bg-clip-text text-transparent uppercase tracking-tight">The Art Vault</h1>
+      {/* Film Grain Effect */}
+      <div className="pointer-events-none fixed inset-0 z-50 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: "url('/grain.png')" }} />
+
+      {/* Header Eyebrow */}
+      <div className="max-w-7xl mx-auto text-center mb-16 space-y-3">
+        <span className="text-[9px] uppercase font-bold tracking-widest px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-amber-500">
+          ✦ Curated Archives ✦
+        </span>
+        <h1 className={`${fraunces.className} text-3xl md:text-5xl font-black tracking-tight`}>
+          ART <span className=" font-bold text-zinc-400">VAULT</span>
+        </h1>
+        <p className="text-xs text-zinc-500 max-w-sm mx-auto">Original Oil Pastel Masterpieces & Premium Architectural Illustrations.</p>
       </div>
 
-      {/* DYNAMIC METRICS CONSOLE */}
-      <section className="max-w-7xl mx-auto px-6 mt-8">
-        <div className="w-full bg-zinc-900/30 backdrop-blur-xl border border-zinc-800/60 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-          <div className="flex items-center gap-4 z-10">
-            <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shadow-[0_0_12px_#f59e0b]" />
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Inventory Sync</span>
-              <h2 className="text-lg font-extrabold tracking-tight text-zinc-100 mt-0.5">Available Masterpieces: <span className="text-amber-500 font-mono text-xl ml-1">{loading ? ".." : artworks.length}</span></h2>
-            </div>
-          </div>
-          <button type="button" className="flex items-center gap-2 bg-zinc-950/40 border border-zinc-800/80 hover:border-zinc-700 text-zinc-400 text-xs font-bold px-4 py-3 rounded-xl transition"><SlidersHorizontal className="w-3.5 h-3.5" /> Matrix</button>
+      {/* GALLERY GRID */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="w-5 h-5 border-t-transparent border-2 rounded-full animate-spin" style={{ borderColor: GOLD }} />
         </div>
-      </section>
-
-      {/* INVENTORY GRID AREA */}
-      <main className="max-w-7xl mx-auto px-6 pt-10">
-        {loading ? (
-          <div className="flex justify-center items-center py-24"><div className="w-6 h-6 border border-amber-500 border-t-transparent rounded-full animate-spin" /></div>
-        ) : artworks.length === 0 ? (
-          <div className="text-center bg-zinc-900/10 border border-zinc-900 rounded-2xl py-16"><Grid3X3 className="w-8 h-8 text-zinc-700 mx-auto mb-3" /><p className="text-zinc-500 text-xs uppercase tracking-wide">No assets loaded.</p></div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {artworks.map((art) => {
-              const avgRating = calculateAverageRating(art.reviews);
-              return (
-                <div key={art.id} className="group bg-zinc-900/20 backdrop-blur-md border border-zinc-900/80 rounded-2xl overflow-hidden transition-all duration-500 hover:border-zinc-700/60 shadow-lg relative">
-                  <div className="relative aspect-[4/5] w-full bg-[#0d0d0f] overflow-hidden border-b border-zinc-950">
-                    <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
-                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg border border-zinc-800 text-amber-400 text-[10px] font-bold font-mono">
-                      <Star className="w-3 h-3 fill-amber-400" /> {avgRating}
-                    </div>
-                    {/* View Details Action Trigger */}
-                    <button onClick={() => { setSelectedArt(art); setViewingDetails(true); }} className="absolute inset-0 bg-black/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white text-xs font-bold gap-2">
-                      <Maximize2 className="w-4 h-4 text-amber-500" /> Inspect Masterpiece
-                    </button>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {artworks.map((art) => {
+            const artStats = ratingStats[art.id];
+            
+            return (
+              <div 
+                key={art.id} 
+                className="group bg-zinc-900/20 backdrop-blur-md border border-zinc-900 rounded-2xl overflow-hidden transition-all duration-500 hover:border-amber-500/20 shadow-lg relative"
+              >
+                {/* Image Container */}
+                <div 
+                  onClick={() => setSelectedArt(art)}
+                  className="relative aspect-4/5 w-full overflow-hidden bg-zinc-950 border-b border-zinc-950 cursor-pointer"
+                >
+                  <img 
+                    src={art.imageUrl} 
+                    alt={art.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                  />
+                  
+                  {/* 🔥 NEW: LIVE RATING BADGE INJECTED AT TOP RIGHT ON THE IMAGE */}
+                  <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-zinc-800/80 px-2 py-1 rounded-lg text-[9px] font-bold font-mono tracking-tight text-zinc-300">
+                    <Star className="w-3 h-3 text-amber-500 fill-amber-500 flex-shrink-0" />
+                    <span>{artStats ? `${artStats.average} (${artStats.count})` : "0.0 (0)"}</span>
                   </div>
-                  <div className="p-5">
-                    <h3 className="text-sm font-bold text-zinc-200 tracking-tight truncate mb-1">{art.title}</h3>
-                    <p className="text-[10px] text-zinc-500 font-mono mb-3">Scale: {art.size || 'Custom Size'}</p>
-                    <div className="flex items-center justify-between border-t border-zinc-900/60 pt-3">
-                      <span className="text-sm font-black font-mono text-zinc-100">LKR {art.price?.toLocaleString()}</span>
-                      <button onClick={() => { setSelectedArt(art); setViewingDetails(true); }} className="text-[10px] bg-zinc-900 hover:bg-amber-500 hover:text-black font-bold uppercase tracking-wider px-3.5 py-2 rounded-xl transition border border-zinc-800/80 hover:border-amber-400">View & Critique</button>
+
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="bg-black/60 backdrop-blur-md border border-zinc-800 p-3 rounded-full text-amber-400 transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                      <Eye className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
 
-      {/* 🔥 MAIN DETAILS INSPECTION & COMMENTING MODAL (PREMIUM DUAL GRID) */}
-      {viewingDetails && selectedArt && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-4xl bg-zinc-950 border border-zinc-800 rounded-3xl p-6 relative shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 my-8 max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
+                {/* Card Info Details */}
+                <div className="p-5 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-200 truncate tracking-tight">{art.title}</h3>
+                    <span className={`${spaceMono.className} text-[10px] text-amber-500 font-bold block mt-0.5`}>LKR {art.price?.toLocaleString()}</span>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedArt(art)}
+                    className="w-full flex items-center justify-center gap-1.5 bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 font-bold uppercase tracking-wider py-2.5 rounded-xl text-[9px] transition duration-300"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                    View Details & Reviews
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* THE HIGH-END CINEMATIC LIVE PREVIEW DRAWER PANEL */}
+      {selectedArt && (
+        <div className="fixed inset-0 z-50 flex justify-end animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setSelectedArt(null)} />
+
+          <div className="relative w-full max-w-md h-full bg-[#09090b] border-l border-zinc-900 p-6 shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-right duration-500">
             
-            <button onClick={() => { setViewingDetails(false); setBuyingMode(false); }} className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 p-1.5 rounded-xl bg-zinc-900/50 border border-zinc-850 transition"><X className="w-4 h-4" /></button>
+            {/* Upper Section */}
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-900">
+              <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Artifact Blueprint</span>
+              <button 
+                onClick={() => setSelectedArt(null)}
+                className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-            {/* LEFT SIDE: GRAPHICS & CORE ATTRIBUTES */}
-            <div className="space-y-4">
-              <div className="w-full aspect-[4/5] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-900 shadow-inner">
+            {/* Middle Section: Scrollable Content */}
+            <div className="flex-1 overflow-y-auto my-5 pr-1 space-y-6 custom-scrollbar">
+              
+              <div className="w-full aspect-4/5 rounded-xl overflow-hidden border border-zinc-900 shadow-xl relative bg-zinc-950">
                 <img src={selectedArt.imageUrl} alt={selectedArt.title} className="w-full h-full object-cover" />
               </div>
-              <div className="bg-zinc-900/20 border border-zinc-900/60 rounded-xl p-4 space-y-2">
-                <h2 className="text-xl font-black tracking-tight text-zinc-100">{selectedArt.title}</h2>
-                <p className="text-xs text-zinc-400 leading-relaxed">{selectedArt.description}</p>
-                <div className="flex justify-between items-center border-t border-zinc-900 pt-3 mt-2">
-                  <div>
-                    <span className="block text-[8px] uppercase font-bold text-zinc-500 font-mono">Dimensions</span>
-                    <span className="text-xs font-bold text-zinc-300">{selectedArt.size || 'Bespoke Medium'}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="block text-[8px] uppercase font-bold text-zinc-500 font-mono">Curation Value</span>
-                    <span className="text-base font-black font-mono text-amber-500">LKR {selectedArt.price?.toLocaleString()}</span>
-                  </div>
-                </div>
-                <button onClick={() => setBuyingMode(true)} className="w-full mt-3 bg-linear-to-r from-amber-500 to-amber-600 text-black font-bold text-xs uppercase tracking-wider py-3 rounded-xl transition shadow-md">Acquire Masterpiece Frame</button>
-              </div>
-            </div>
 
-            {/* RIGHT SIDE: LIVE REVIEWS, COMMENTS & SUBMIT FORM */}
-            <div className="flex flex-col justify-between space-y-6">
-              
-              {/* Reviews History Display List */}
-              <div className="flex-1 space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2 border-b border-zinc-900 pb-2">
-                  <MessageSquare className="w-4 h-4 text-amber-500" /> Collector Critiques ({selectedArt.reviews?.length || 0})
-                </h3>
+              <div className="space-y-1">
+                <h2 className={`${fraunces.className} text-xl font-black text-zinc-100 tracking-tight`}>{selectedArt.title}</h2>
+                <span className={`${spaceMono.className} text-sm font-black text-amber-500 block`}>LKR {selectedArt.price?.toLocaleString()}</span>
+                <p className="text-xs text-zinc-400 leading-relaxed pt-2">{selectedArt.description}</p>
+              </div>
+
+              {/* LIVE REVIEWS SUBMISSION ENGINE INSIDE PREVIEW */}
+              <div className="bg-zinc-900/20 border border-zinc-900/80 rounded-2xl p-5 shadow-xl space-y-4">
+                <div>
+                  <span className="text-[8px] uppercase font-bold tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Review Input</span>
+                  <h4 className={`${fraunces.className} text-sm font-black text-zinc-200 mt-2`}>Write a Review</h4>
+                </div>
                 
-                <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-                  {!selectedArt.reviews || selectedArt.reviews.length === 0 ? (
-                    <p className="text-[11px] text-zinc-600 italic py-6">No evaluations have been written for this masterpiece yet.</p>
-                  ) : (
-                    selectedArt.reviews.map((rev, idx) => (
-                      <div key={idx} className="bg-zinc-900/30 border border-zinc-900/50 rounded-xl p-3 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-zinc-300">{rev.reviewerName}</span>
-                          <div className="flex items-center gap-0.5 text-amber-400 text-[10px] font-bold font-mono">
-                            <Star className="w-3 h-3 fill-amber-400" /> {rev.rating}
-                          </div>
-                        </div>
-                        <p className="text-[11px] text-zinc-400 leading-relaxed">"{rev.commentText}"</p>
-                        <span className="block text-[8px] text-zinc-600 text-right font-mono">{rev.timestamp}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Review Form Block */}
-              <div className="bg-zinc-900/20 border border-zinc-900 rounded-2xl p-4">
-                <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wide mb-3">Leave Curation Critique</h4>
-                <form onSubmit={handleSubmitReview} className="space-y-3">
+                <form onSubmit={handleReviewSubmit} className="space-y-3.5">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[8px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Collector Name</label>
-                      <input type="text" required value={reviewerName} onChange={e => setReviewerName(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-lg px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition" placeholder="Your name" />
+                      <label className="block text-[8px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Name *</label>
+                      <div className="relative">
+                        <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-600" />
+                        <input type="text" required value={revName} onChange={e => setRevName(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl pl-8 pr-2 py-1.5 text-[11px] focus:outline-none focus:border-amber-500/30 transition text-zinc-300" placeholder="John Doe" />
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-[8px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Curation Rating</label>
-                      <select value={ratingValue} onChange={e => setRatingValue(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-lg px-3 py-2 text-xs text-zinc-400 focus:outline-none focus:border-amber-500 transition">
-                        <option value="5">⭐⭐⭐⭐⭐ Excellent (5)</option>
-                        <option value="4">⭐⭐⭐⭐ Good (4)</option>
-                        <option value="3">⭐⭐⭐ Average (3)</option>
-                        <option value="2">⭐⭐ Fair (2)</option>
-                        <option value="1">⭐ Poor (1)</option>
-                      </select>
+                      <label className="block text-[8px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Bistro Name</label>
+                      <div className="relative">
+                        <Building className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-600" />
+                        <input type="text" value={revBusiness} onChange={e => setRevBusiness(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl pl-8 pr-2 py-1.5 text-[11px] focus:outline-none focus:border-amber-500/30 transition text-zinc-300" placeholder="Optional" />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Star Rating Selection */}
                   <div>
-                    <label className="block text-[8px] uppercase font-bold tracking-wider text-zinc-500 mb-1">Critique Comment</label>
-                    <textarea rows={2} required value={commentText} onChange={e => setCommentText(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-lg px-3 py-2 text-xs text-zinc-300 focus:outline-none focus:border-amber-500 transition resize-none" placeholder="Share your architectural or emotional perspective..." />
+                    <label className="block text-[8px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Rating Ratio</label>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRevRating(star)}
+                          className="p-0.5 transition transform active:scale-95"
+                        >
+                          <Star 
+                            className="w-4 h-4 transition-colors" 
+                            style={{ color: star <= revRating ? GOLD : "#3f3f46" }}
+                            fill={star <= revRating ? GOLD : "none"}
+                          />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <button type="submit" disabled={submittingReview} className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:text-amber-400 text-zinc-300 font-bold text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition disabled:opacity-50">
-                    {submittingReview ? "Submitting Critique..." : "Submit Curation Review"}
+
+                  <div>
+                    <label className="block text-[8px] font-bold uppercase tracking-widest text-zinc-500 mb-1">Commentary *</label>
+                    <textarea required rows={2} value={revComment} onChange={e => setRevComment(e.target.value)} className="w-full bg-zinc-950 border border-zinc-900 rounded-xl px-3 py-1.5 text-[11px] focus:outline-none focus:border-amber-500/30 transition text-zinc-300 resize-none" placeholder="Your experience with this art..." />
+                  </div>
+
+                  <button type="submit" disabled={submittingReview} className="w-full flex items-center justify-center gap-1.5 bg-zinc-950 border border-zinc-800 hover:border-amber-500 hover:text-black hover:bg-amber-500 text-zinc-400 font-bold uppercase tracking-wider py-2 rounded-xl text-[9px] transition duration-300 disabled:opacity-40">
+                    <Send className="w-2.5 h-2.5" />
+                    {submittingReview ? "Submitting Matrix..." : "Submit Review"}
                   </button>
                 </form>
               </div>
 
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* GLASSY SECURED ACQUISITION MODAL (INVOICE GENERATOR) */}
-      {buyingMode && selectedArt && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-300">
-            <button onClick={() => setBuyingMode(false)} className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 p-1 rounded-lg transition"><X className="w-4 h-4" /></button>
-            <span className="text-[9px] uppercase font-bold tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Secured Acquisition</span>
-            <h2 className="text-lg font-black text-zinc-100 mt-3 mb-1">Confirm Request</h2>
-            <p className="text-xs text-zinc-400 mb-5">Acquiring masterpiece: <span className="text-zinc-200 font-bold">{selectedArt.title}</span></p>
-
-            <form onSubmit={handleCheckout} className="space-y-4">
-              <div>
-                <label className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5">Full Name</label>
-                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200" placeholder="e.g., John Doe" />
-              </div>
-              <div>
-                <label className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5">Email Address</label>
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200" placeholder="name@domain.com" />
-              </div>
-              <div>
-                <label className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5">Phone Contact</label>
-                <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200" placeholder="07XXXXXXXX" />
-              </div>
-              <div>
-                <label className="block text-[9px] font-bold uppercase tracking-widest text-zinc-500 mb-1.5">Shipping Destination</label>
-                <textarea required rows={3} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-zinc-900/50 border border-zinc-800/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition text-zinc-200 resize-none" placeholder="Complete home or studio address..." />
-              </div>
-              <div className="border-t border-zinc-900 pt-4 mt-6 flex items-center justify-between">
-                <div>
-                  <span className="block text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Total Value</span>
-                  <span className="text-base font-black font-mono text-amber-500">LKR {selectedArt.price?.toLocaleString()}</span>
+              {/* Live Comments Output Display */}
+              <div className="space-y-4 pt-4 border-t border-zinc-900">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-zinc-300">
+                    <MessageSquare className="w-4 h-4 text-amber-500" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider">Patron Commentary</h4>
+                  </div>
+                  <span className="text-[9px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-500 font-mono">{liveComments.length} Nodes</span>
                 </div>
-                <button type="submit" disabled={submitting} className="flex items-center gap-1.5 bg-linear-to-r from-amber-500 to-amber-600 text-black font-bold uppercase tracking-wider px-5 py-3 rounded-xl text-[10px] transition duration-300 disabled:opacity-50 shadow-lg shadow-amber-500/10">
-                  {submitting ? "Verifying..." : "Submit Invoice"}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+
+                {liveComments.length === 0 ? (
+                  <div className="p-4 bg-zinc-950 border border-zinc-900/60 rounded-xl text-center">
+                    <p className="text-[10px] font-mono text-zinc-600 uppercase">No active comment matrices recorded for this art.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {liveComments.map((comment) => (
+                      <div key={comment.id} className="bg-zinc-900/20 border border-zinc-900 p-4 rounded-xl space-y-2 animate-in fade-in duration-300">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="text-xs font-bold text-zinc-200">{comment.name}</h5>
+                            {comment.businessName && <span className="text-[8px] text-amber-500 font-mono block">{comment.businessName}</span>}
+                          </div>
+                          
+                          {comment.rating && (
+                            <div className="flex items-center gap-0.5">
+                              {[...Array(comment.rating)].map((_, i) => (
+                                <Star key={i} className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-zinc-400 italic leading-relaxed">"{comment.comment}"</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </form>
+
+            </div>
+
+            {/* Bottom Section: Fixed Action */}
+            <div className="pt-4 border-t border-zinc-900 bg-[#09090b]">
+              <button
+                onClick={() => {
+                  addToCart(selectedArt);
+                  setSelectedArt(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-amber-500 border border-amber-600 hover:bg-amber-600 text-black font-black uppercase tracking-wider py-3.5 rounded-xl text-xs transition duration-300 shadow-xl"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Acquire Artwork To Cart
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #1f1f23;
+          border-radius: 10px;
+        }
+      `}</style>
 
     </div>
   );

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fraunces } from "next/font/google";
-import { Menu, X, Palette, LayoutDashboard, ShoppingBag } from "lucide-react";
+import { Menu, X, Palette, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext"; // 🔥 Global Cart Context Integration
 
 const fraunces = Fraunces({
@@ -42,7 +42,7 @@ function BrushStroke({ active, className = "", strokeWidth = 2.5 }) {
 }
 
 export default function Navbar() {
-  const { cart } = useCart(); // 🔥 Cart එකේ තියෙන බඩු ප්‍රමාණය සජීවීව දැනගැනීමට
+  const { cart } = useCart(); // 🔥 Live Global Cart Count Tracker
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -112,10 +112,8 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* DESKTOP INTERFACES: CART + DASHBOARD */}
-        <div className="hidden md:flex items-center gap-4">
-          
-          {/* 🔥 DESKTOP CURATION CART ICON */}
+        {/* DESKTOP INTERFACES: ONLY SHOPPING BAG */}
+        <div className="hidden md:flex items-center">
           <Link
             href="/cart"
             className="p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:text-amber-400 hover:border-amber-500/20 relative transition duration-300 group"
@@ -130,20 +128,12 @@ export default function Navbar() {
               </span>
             )}
           </Link>
-
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 hover:bg-[#C9A24B] hover:border-[#C9A24B] hover:text-black text-zinc-300 text-xs font-semibold px-4 py-2.5 rounded-xl transition-all duration-300"
-          >
-            <LayoutDashboard className="w-4 h-4" />
-            Dashboard
-          </Link>
         </div>
 
-        {/* MOBILE ACTIONS (CART + MENU TRIGGER) */}
+        {/* MOBILE ACTIONS (CART + TRIGGER) */}
         <div className="flex md:hidden items-center gap-3">
           
-          {/* 🔥 MOBILE CURATION CART ICON */}
+          {/* MOBILE QUICK CART ICON */}
           <Link
             href="/cart"
             className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-amber-400 relative transition"
@@ -178,9 +168,9 @@ export default function Navbar() {
         style={{ background: `linear-gradient(90deg, transparent, rgba(201,162,75,0.3), transparent)` }}
       />
 
-      {/* MOBILE DROP-DOWN MENU */}
+      {/* MOBILE DROP-DOWN MENU (CLEAN & FULLY RESPONSIVE) */}
       {isOpen && (
-        <div className="md:hidden w-full bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-900 px-6 py-6 space-y-5 animate-in fade-in slide-in-from-top-3 duration-300">
+        <div className="md:hidden w-full bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-900 px-6 py-6 space-y-6 animate-in fade-in slide-in-from-top-3 duration-300">
           <div className="flex flex-col gap-0.5 text-xs font-bold uppercase tracking-widest text-zinc-400">
             {navLinks.map((link, i) => {
               const active = isActive(link.href);
@@ -190,7 +180,7 @@ export default function Navbar() {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   style={{ animationDelay: `${i * 60}ms`, color: active ? GOLD : undefined }}
-                  className="animate-in fade-in slide-in-from-left-2 fill-mode-both duration-300 flex items-center justify-between py-2.5 border-b border-zinc-900/60 transition hover:text-zinc-200"
+                  className="animate-in fade-in slide-in-from-left-2 fill-mode-both duration-300 flex items-center justify-between py-3 border-b border-zinc-900/40 transition hover:text-zinc-200"
                 >
                   {link.label}
                   {active && <span className="h-1.5 w-1.5 rounded-full" style={{ background: GOLD }} />}
@@ -199,14 +189,21 @@ export default function Navbar() {
             })}
           </div>
 
+          {/* MOBILE CART IN-MENU REDIRECT LINK (FOR MAXIMUM UX) */}
           <Link
             onClick={() => setIsOpen(false)}
-            href="/dashboard"
+            href="/cart"
             style={{ animationDelay: `${navLinks.length * 60}ms` }}
-            className="animate-in fade-in slide-in-from-left-2 fill-mode-both duration-300 flex items-center justify-center gap-2 w-full bg-zinc-900 border border-zinc-800 hover:border-[#C9A24B]/40 text-zinc-200 text-xs font-semibold py-3 rounded-xl mt-1 transition"
+            className="animate-in fade-in slide-in-from-left-2 fill-mode-both duration-300 flex items-center justify-between w-full bg-zinc-900/50 border border-zinc-900 text-zinc-300 text-xs font-semibold px-4 py-3.5 rounded-xl transition hover:border-amber-500/20"
           >
-            <LayoutDashboard className="w-4 h-4" style={{ color: GOLD }} />
-            Dashboard
+            <div className="flex items-center gap-2.5">
+              <ShoppingBag className="w-4 h-4 text-amber-500" />
+              <span>Review Your Cart Selection</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-md font-mono">{cart.length} Pieces</span>
+              <ArrowRight className="w-3.5 h-3.5 text-zinc-500" />
+            </div>
           </Link>
         </div>
       )}

@@ -1,71 +1,83 @@
 "use client";
 import Link from "next/link";
-import { Layers, ArrowUpRight } from "lucide-react";
+import { Fraunces, Space_Mono } from "next/font/google";
+import { MapPin, ArrowUpRight } from "lucide-react";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const GOLD = "#C9A24B";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
-    <footer className="w-full border-t border-zinc-900 bg-[#070708] text-zinc-400 font-sans antialiased">
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6">
+    <footer className="w-full bg-[#050506] border-t border-zinc-900/60 pt-16 pb-8 px-6 mt-auto relative overflow-hidden">
+      {/* Background Decorative Subtle Mesh */}
+      <div 
+        className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 h-64 w-full opacity-10 blur-3xl"
+        style={{
+          background: `radial-gradient(circle, rgba(201,162,75,0.15), transparent 70%)`
+        }}
+      />
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 z-10 relative">
         
-        {/* BRAND & STUDIO MOTTO */}
-        <div className="md:col-span-2 space-y-4">
-          <div className="flex items-center gap-2 text-amber-500 font-black text-sm uppercase tracking-widest cursor-default">
-            <Layers className="w-4 h-4" />
-            <span>KreativeLabs Art</span>
-          </div>
-          <p className="text-xs text-zinc-500 max-w-sm leading-relaxed font-medium">
-            Fine-emotion and contemporary depth fused into physical canvas curation. Transforming modern premium bistros, luxury lounges, and bespoke living environments.
+        {/* COLUMN 1: BRAND IDENTITY (8 COLS) */}
+        <div className="md:col-span-8 space-y-4">
+          <Link href="/" className="inline-block">
+            <h3 className={`${fraunces.className} text-xl font-medium tracking-tight text-zinc-100`}>
+              Aggrani <span className="italic text-zinc-400 font-light" style={{ color: GOLD }}>Karunarathna</span>
+            </h3>
+          </Link>
+          <p className="text-xs text-zinc-500 max-w-md leading-relaxed">
+            Original Oil Pastel Art & Illustrations. Custom architectural curation meticulously engineered to transform modern premium interiors and luxury spaces.
           </p>
+          <div className="flex items-center gap-2 text-[10px] text-zinc-600 font-mono uppercase tracking-widest pt-1">
+            <MapPin className="w-3.5 h-3.5 text-amber-500/60" /> Christchurch, New Zealand
+          </div>
         </div>
 
-        {/* QUICK NAVIGATION & ZENITH LINK */}
-        <div className="space-y-3 flex flex-col justify-between">
-          <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-zinc-200 mb-3">Navigation</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              <li>
-                <Link href="/" className="hover:text-amber-400 transition duration-300">
-                  Home Matrix
+        {/* COLUMN 2: QUICK NAVIGATION (4 COLS) */}
+        <div className="md:col-span-4 space-y-3">
+          <span className="block text-[9px] font-black uppercase tracking-widest text-zinc-600 font-mono">
+            Navigation
+          </span>
+          <ul className="space-y-2 text-xs font-medium">
+            {[
+              { label: "The Studio Gallery", path: "/" },
+              { label: "Artist Portrait", path: "/artists" },
+              { label: "Privacy Policy", path: "/dashboard" },
+            ].map((link, idx) => (
+              <li key={idx}>
+                <Link 
+                  href={link.path} 
+                  className="text-zinc-400 hover:text-[#E9C683] transition duration-300 flex items-center gap-1 group w-fit"
+                >
+                  {link.label}
+                  <ArrowUpRight className="w-2.5 h-2.5 opacity-0 -translate-y-0.5 group-hover:opacity-100 transition-all duration-300" />
                 </Link>
               </li>
-              <li>
-                <Link href="/gallery" className="hover:text-amber-400 transition duration-300 flex items-center gap-0.5">
-                  The Art Vault <ArrowUpRight className="w-3 h-3 opacity-50" />
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="hover:text-amber-400 transition duration-300">
-                  Admin Console
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <button 
-            onClick={scrollToTop}
-            className="text-[9px] uppercase font-bold tracking-widest text-zinc-600 hover:text-zinc-400 transition pt-4 text-left block"
-          >
-            [ Back To Zenith ↑ ]
-          </button>
+            ))}
+          </ul>
         </div>
 
       </div>
 
-      {/* LOWER BASEBAR */}
-      <div className="w-full border-t border-zinc-900/60 bg-zinc-950/40 py-6 text-[10px] uppercase tracking-widest font-semibold text-zinc-600">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span>&copy; {currentYear} KreativeLabs Art Engine. All Rights Reserved.</span>
-          <div className="flex gap-6 text-zinc-500 font-medium">
-            <a href="#" className="hover:text-zinc-300 transition">Terms Matrix</a>
-            <a href="/dashboard" className="hover:text-zinc-300 transition">Privacy Layer</a>
-            <a href="#" className="hover:text-zinc-300 transition">Architectural Support</a>
-          </div>
+      {/* LOWER BOTTOM ARCHITECTURE BAR */}
+      <div className="max-w-7xl mx-auto pt-6 border-t border-zinc-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-zinc-600 font-mono tracking-wider z-10 relative">
+        <p>&copy; {currentYear} Aggrani Karunarathna. All rights reserved.</p>
+        <div className="flex items-center gap-1.5 opacity-50 hover:opacity-100 transition duration-300">
+          <span>Architectured & Developed by</span>
+          <span className="font-bold text-zinc-300 tracking-wide">Keshan Panditharathna</span>
         </div>
       </div>
     </footer>

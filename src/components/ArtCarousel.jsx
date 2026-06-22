@@ -18,8 +18,8 @@ const STATIC_SLIDES = [
   },
   {
     id: "slide-3",
-    title: "Spatial Texture Symphony",
-    subtitle: "Handcrafted using archival materials designed to elevate high-end bistros, corporate lounges, and luxury spaces.",
+    title: "Exclusive Studio Launch Offers",
+    subtitle: "Acquire certified original heirlooms with complimentary premium framing and secure insured logistics. Select your custom frame configuration inside today — limited slots available.",
     image: "/img/carousel3.jpeg"
   }
 ];

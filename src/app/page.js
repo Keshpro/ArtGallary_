@@ -711,7 +711,7 @@ export default function Home() {
 
             <button type="submit" disabled={submittingReview} className="w-full flex items-center justify-center gap-2 bg-zinc-950 border border-zinc-800 hover:border-amber-500 hover:text-black hover:bg-amber-500 text-zinc-300 font-bold uppercase tracking-wider py-3 rounded-xl text-[10px] transition duration-300 disabled:opacity-40 shadow-md">
               <Send className="w-3 h-3" />
-              {submittingReview ? "Processing Core..." : "Inject Review"}
+              {submittingReview ? "Processing Core..." : "submit review"}
             </button>
           </form>
         </div>

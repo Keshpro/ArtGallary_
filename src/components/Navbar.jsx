@@ -17,7 +17,7 @@ const GOLD_SOFT = "#E9C683";
 const navLinks = [
   { href: "/gallery", label: "Gallery" },
   { href: "/artists", label: "Artists" },
-  { href: "/about", label: "About" },
+  { href: "/b2b-services", label: "B2B Services" },
   { href: "/contact", label: "Contact" },
 ];
 

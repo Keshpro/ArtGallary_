@@ -6,21 +6,21 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const STATIC_SLIDES = [
   {
     id: "slide-1",
-    title: "Midnight Auction Exhibition",
-    subtitle: "Experience the ultimate architectural curation of modern abstract masterpieces and graphite canvas structures.",
-    image: "https://images.unsplash.com/photo-1549887534-1541e9326642?q=80&w=1200&auto=format&fit=crop"
+    title: "Premium Curation for Luxury Cafes",
+    subtitle: "Transform your bistro walls into a high-end gallery space with Aggrani's bold oil pastel masterpieces. Connect with our studio today for exclusive commercial packages and special offers.",
+    image: "/img/carousel1.jpeg"
   },
   {
     id: "slide-2",
-    title: "The Golden Era Collection",
-    subtitle: "Exclusive minimalist portrait frames and original physical heirlooms now open for private studio acquisition.",
-    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=1200&auto=format&fit=crop"
+    title: "Bespoke Spatial Architecture",
+    subtitle: "Custom-tailored vibrant oil pastel illustrations and fine-line animal symbolism. Engineered to elevate modern espresso bistros and premium hospitality environments.",
+    image: "/img/carousel2.jpeg"
   },
   {
     id: "slide-3",
     title: "Spatial Texture Symphony",
     subtitle: "Handcrafted using archival materials designed to elevate high-end bistros, corporate lounges, and luxury spaces.",
-    image: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1200&auto=format&fit=crop"
+    image: "/img/carousel3.jpeg"
   }
 ];
 

@@ -10,6 +10,9 @@ import {
   Heart,
   ArrowUpRight,
   Link as LinkIcon,
+  MapPin,
+  Sparkles,
+  Zap
 } from "lucide-react";
 import Footer from "@/components/Footer";
 
@@ -172,30 +175,30 @@ function FeaturedWorkCard({ work }) {
 
 export default function ArtistPage() {
   const metrics = [
-    { id: 1, icon: Palette, title: "Original Pieces", value: 40, suffix: "+" },
-    { id: 2, icon: Coffee, title: "Cafe Installations", value: 12, suffix: "" },
-    { id: 3, icon: Award, title: "Exhibitions Held", value: 3, suffix: "", pad: 2 },
+    { id: 1, icon: Palette, title: "Bespoke Creations", value: 25, suffix: "+" },
+    { id: 2, icon: Coffee, title: "Spatial Showcases", value: 8, suffix: "" },
+    { id: 3, icon: Award, title: "Curation Galleries", value: 2, suffix: "", pad: 2 },
   ];
 
   const featuredWorks = [
     {
       id: 1,
-      title: "Silent Depths",
-      type: "Charcoal on Archival Paper",
+      title: "Wild Sovereignty",
+      type: "Original Oil Pastel on Archival Canvas",
       year: "2025",
       img: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=600&auto=format&fit=crop",
     },
     {
       id: 2,
-      title: "Ethereal Echoes",
-      type: "Oil Canvas Masterpiece",
+      title: "Vibrant Echoes",
+      type: "Hand-Drawn Heavy Pattern",
       year: "2026",
       img: "https://images.unsplash.com/photo-1547891654-e66ed7edd96c?q=80&w=600&auto=format&fit=crop",
     },
     {
       id: 3,
-      title: "Rustic Essence",
-      type: "Bistro Textured Acrylic",
+      title: "The Guardian's Soul",
+      type: "Animal Symbolism Masterpiece",
       year: "2026",
       img: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=600&auto=format&fit=crop",
     },
@@ -222,7 +225,7 @@ export default function ArtistPage() {
         </svg>
 
         {/* HEADER HERO AREA */}
-        <div className="relative flex min-h-[380px] w-full items-center justify-center overflow-hidden border-b border-zinc-900/30 px-6 py-16 text-center md:min-h-[460px]">
+        <div className="relative flex min-h-[350px] w-full items-center justify-center overflow-hidden border-b border-zinc-900/30 px-6 py-12 text-center md:min-h-[400px]">
           <div className="absolute inset-0 overflow-hidden">
             <div
               className="ambient-glow absolute left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
@@ -241,13 +244,13 @@ export default function ArtistPage() {
                 borderColor: "rgba(201,162,75,0.2)",
               }}
             >
-              The Mind Behind The Brush
+              ✦ Art Portfolio ✦
             </span>
 
             <h1
-              className={`${fraunces.className} hero-title mt-5 text-4xl tracking-tight sm:text-6xl md:text-7xl`}
+              className={`${fraunces.className} hero-title mt-5 text-4xl tracking-tight sm:text-6xl md:text-7xl font-black`}
             >
-              <span className="font-light text-zinc-100">Artist </span>
+              <span className="font-light text-zinc-100">Aggrani </span>
               <span
                 className="font-medium italic"
                 style={{
@@ -257,9 +260,10 @@ export default function ArtistPage() {
                   color: "transparent",
                 }}
               >
-                Profile
+                Karunarathna
               </span>
             </h1>
+            <p className="text-zinc-500 text-[10px] uppercase tracking-widest mt-3 font-mono">Original Oil Pastel Art & Illustrations</p>
 
             <div className="hero-stroke mt-6 flex justify-center" style={{ color: GOLD }}>
               <BrushStroke active className="h-3 w-44 md:w-60" strokeWidth={2.5} />
@@ -269,7 +273,8 @@ export default function ArtistPage() {
 
         {/* MAIN LAYOUT */}
         <main className="mx-auto mt-4 grid max-w-6xl grid-cols-1 gap-12 px-6 pb-24 lg:grid-cols-12">
-          {/* LEFT COLUMN: PICTURE & CORE STATS (4 COLS) */}
+          
+          {/* LEFT COLUMN: BIGGER IMAGE & CORE STATS (4 COLS) */}
           <div className="space-y-6 lg:col-span-4">
             <div
               ref={card.ref}
@@ -277,56 +282,59 @@ export default function ArtistPage() {
                 card.visible ? "reveal--visible" : ""
               } relative overflow-hidden rounded-3xl border border-zinc-900/80 bg-zinc-900/20 p-6 text-center shadow-xl backdrop-blur-md`}
             >
-              {/* Cinematic Profile Frame */}
+              {/* 🔥 ULTRA-WIDE CINEMATIC PROFILE FRAME (LARGER ACCORDING TO USER REQUEST) */}
               <div
-                className="group relative mx-auto h-40 w-40 overflow-hidden rounded-2xl border bg-zinc-950 shadow-lg transition-transform duration-500 hover:-translate-y-1"
-                style={{ borderColor: "rgba(201,162,75,0.25)" }}
+                className="group relative w-full h-7 md:h-72 overflow-hidden rounded-2xl border bg-zinc-950 shadow-lg transition-all duration-500 hover:border-amber-500/30"
+                style={{ borderColor: "rgba(201,162,75,0.15)" }}
               >
                 <img
                   src="/aaa.webp"
-                  alt="Lead Artist"
-                  className="h-full w-full object-cover grayscale transition duration-700 ease-out group-hover:scale-110 group-hover:grayscale-0"
+                  alt="Aggrani Karunarathna"
+                  className="h-full w-full object-cover grayscale transition duration-700 ease-out group-hover:scale-[1.03] group-hover:grayscale-0"
                 />
-                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                
+                {/* Geolocation Tag Overlay */}
+                <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md border border-zinc-800/80 px-2.5 py-1 rounded-lg flex items-center gap-1 text-[9px] font-bold tracking-wider text-zinc-300 uppercase">
+                  <MapPin className="w-3 h-3 text-amber-500" /> Christchurch, NZ
+                </div>
               </div>
 
-              <h2 className="mt-5 text-xl font-black tracking-tight text-zinc-100">
-                Lead Resident Curator
+              <h2 className="mt-5 text-base font-black tracking-tight text-zinc-100 uppercase">
+                Aggrani Karunarathna
               </h2>
-              <p
-                className="mt-0.5 text-[10px] font-bold uppercase tracking-widest"
-                style={{ color: GOLD }}
-              >
-                KreativeLabs Exclusives
-              </p>
+              <div className="flex items-center justify-center gap-1.5 mt-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                  Emerging Resident Artist
+                </p>
+              </div>
 
               <div className="mx-auto my-4 h-px w-12 bg-zinc-800" />
 
               {/* Pull quote with oversized serif mark */}
-              <div className="relative mt-4 px-2">
+              <div className="relative mt-2 px-2">
                 <span
                   aria-hidden="true"
                   className={`${fraunces.className} pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 select-none text-6xl italic`}
-                  style={{ color: "rgba(201,162,75,0.18)" }}
+                  style={{ color: "rgba(201,162,75,0.15)" }}
                 >
                   &ldquo;
                 </span>
                 <p
-                  className={`${fraunces.className} relative text-sm italic leading-relaxed text-zinc-300`}
+                  className={`${fraunces.className} relative text-xs italic leading-relaxed text-zinc-400`}
                 >
-                  Art is the physical manifestation of unvoiced emotion, tailored to ground
-                  modern chaotic spaces.
+                  Bold Colours, Wild Beauty — Curation designed to bring nature's raw emotional depth into modern architecture.
                 </p>
               </div>
 
               {/* Sync Links */}
-              <div className="mt-6 flex justify-center gap-4 border-t border-zinc-950 pt-4">
+              <div className="mt-5 flex justify-center gap-4 border-t border-zinc-950 pt-4">
                 <a
                   href="#"
-                  className="flex items-center gap-1 rounded text-[10px] font-bold uppercase tracking-wider text-zinc-500 transition hover:text-[#E9C683] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{ outlineColor: GOLD }}
+                  className="flex items-center gap-1 rounded text-[9px] font-bold uppercase tracking-wider text-zinc-500 transition hover:text-[#E9C683]"
                 >
-                  <LinkIcon className="h-3 w-3" /> Instagram <ArrowUpRight className="h-2.5 w-2.5" />
+                  <LinkIcon className="h-3 w-3" /> Digital Archive <ArrowUpRight className="h-2.5 w-2.5" />
                 </a>
               </div>
             </div>
@@ -339,45 +347,49 @@ export default function ArtistPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: BIOGRAPHY & SHOWCASE (8 COLS) */}
+          {/* RIGHT COLUMN: REAL BIOGRAPHY & CREATIVE SHOWCASE (8 COLS) */}
           <div className="space-y-10 lg:col-span-8">
+            
             {/* Biography Section */}
             <div
               ref={bio.ref}
               className={`reveal ${bio.visible ? "reveal--visible" : ""} space-y-4`}
             >
-              <SectionHeading icon={Heart}>Creative Journey</SectionHeading>
-              <div className="space-y-4 rounded-2xl border border-zinc-900/80 bg-zinc-900/10 p-6 text-xs leading-relaxed text-zinc-400 shadow-sm backdrop-blur-md">
+              <SectionHeading icon={Heart}>The Artist's Soul</SectionHeading>
+              <div className="space-y-5 rounded-2xl border border-zinc-900/80 bg-zinc-900/10 p-6 text-xs leading-relaxed text-zinc-400 shadow-sm backdrop-blur-md">
                 <p>
-                  Specializing in contemporary mixed media, fine line portraiture, and
-                  textured graphite canvas structures, our lead resident artist creates
-                  bespoke visual additions designed to add silent luxury to modern spaces.
+                  I am <strong className="text-zinc-200 font-semibold">Aggrani Karunarathna</strong>, a 23-year-old emerging contemporary artist currently based in the vibrant creative landscapes of <strong className="text-amber-400 font-semibold">Christchurch, New Zealand</strong>. My professional focus centers heavily around the intricate manipulation of vibrant oil pastel illustrations and fine-line structural details.
                 </p>
                 <p>
-                  Every single piece in this gallery is carefully handcrafted using
-                  top-tier archival materials, heavy structural gesso, and raw charcoal
-                  mediums. This ensures that the deep emotional contrasts do not fade over
-                  time, making each painting a generational heirloom item.
+                  My visual style represents an avant-garde fusion of explosive, bold color palettes, meticulous structural patterns, and deep <strong className="text-zinc-200 font-semibold">animal symbolism</strong>. Every artifact is a unique statement of absolute patience, continuous joy, and untamed human emotion translated onto archival heavy canvases.
                 </p>
               </div>
             </div>
 
-            {/* Spatial Design Focus */}
+            {/* Creative Core Pillar Badges */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Oil Pastel Medium", icon: Palette },
+                { label: "Animal Symbolism", icon: Sparkles },
+                { label: "Vibrant Bold Colors", icon: Zap },
+                { label: "Bespoke One-of-a-Kind", icon: ShieldCheck }
+              ].map((pill, idx) => (
+                <div key={idx} className="bg-zinc-950 border border-zinc-900/60 rounded-xl p-3 flex items-center gap-2.5 transition hover:border-amber-500/10">
+                  <pill.icon className="w-3.5 h-3.5 text-amber-500/80 flex-shrink-0" />
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400">{pill.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Spatial Curation Focus */}
             <div
               ref={philosophy.ref}
               className={`reveal ${philosophy.visible ? "reveal--visible" : ""} space-y-4`}
             >
-              <SectionHeading icon={ShieldCheck}>B2B Spatial Philosophy</SectionHeading>
+              <SectionHeading icon={ShieldCheck}>Wild Beauty Integration</SectionHeading>
               <div className="rounded-2xl border border-zinc-900/80 bg-zinc-900/10 p-6 text-xs leading-relaxed text-zinc-400 shadow-sm backdrop-blur-md">
                 <p>
-                  We believe that art shouldn&apos;t just exist in cold museums. Our
-                  primary curation pipeline focuses directly on high-end minimalist
-                  commercial locations like{" "}
-                  <strong className="font-semibold" style={{ color: "#E9C683" }}>
-                    premium espresso bistros, fine dining halls, and boutique hotels
-                  </strong>
-                  . By matching contrast ratios to ambient interior spot lighting, each
-                  workpiece alters the architecture of the wall it claims.
+                  By exploring the delicate intersection where nature's wild textures meet contemporary decorative art, my curation pipeline targets modern architectural structures. Every hand-drawn canvas is calibrated with complex depth ratios to transform residential studios, upscale dining environments, and corporate spaces into premium sanctuaries of raw organic elegance.
                 </p>
               </div>
             </div>
@@ -388,7 +400,7 @@ export default function ArtistPage() {
               className={`reveal ${works.visible ? "reveal--visible" : ""} space-y-4`}
             >
               <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
-                Personal Favorites Portfolio
+                Signature Masterpieces Portfolio
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {featuredWorks.map((work) => (

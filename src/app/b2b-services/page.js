@@ -198,13 +198,13 @@ export default function B2BServicesPage() {
 
           {/*
             BACKGROUND CANVAS
-            aspectRatio is locked to the source photo's own ratio (685:448).
+            aspectRatio locked to the source photo's own ratio (685:448).
             Because object-fit: cover on an element with the SAME ratio as
             its source image never crops, the % coordinates below stay
             pixel-accurate at every screen size — no drift, no guessing.
           */}
           <div
-            className="w-full max-w-[1100px] mx-auto rounded-2xl relative overflow-hidden bg-[#dcd3c9] border border-zinc-900/60 shadow-inner"
+            className="w-full max-w-275 mx-auto rounded-2xl relative overflow-hidden bg-[#dcd3c9] border border-zinc-900/60 shadow-inner"
             style={{ aspectRatio: BG_ASPECT_RATIO }}
           >
             {/* Background lounge photo — drop b2b-lounge-bg.jpg into /public/img/ */}

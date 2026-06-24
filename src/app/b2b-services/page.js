@@ -71,9 +71,9 @@ export default function B2BServicesPage() {
   // Swap these for the user's own artwork — they just need to be portrait
   // orientation to read naturally inside the matted frames.
   const triptychArt = [
-    "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?q=80&w=600&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1487070183336-b863922373d4?q=80&w=600&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=600&auto=format&fit=crop",
+    "/img/fish.webp",
+    "/img/mokey.webp",
+    "/img/mouth.webp",
   ];
 
   const frameBorderColor =

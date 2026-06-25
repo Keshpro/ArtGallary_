@@ -71,7 +71,7 @@ export default function B2BServicesPage() {
   // Swap these for the user's own artwork — they just need to be portrait
   // orientation to read naturally inside the matted frames.
   const triptychArt = [
-    "/img/fish.webp",
+    "/img/fish.jpg",
     "/img/mokey.webp",
     "/img/mouth.webp",
   ];

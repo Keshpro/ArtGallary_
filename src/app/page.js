@@ -457,7 +457,7 @@ export default function Home() {
                 {/* Inner Matte White Mount for Premium Look */}
                 <div className="w-full h-full border-[4px] border-zinc-100/10 overflow-hidden bg-black">
                   <img 
-                    src="/aaa.webp" 
+                    src="/img/fish.jpg" 
                     className="w-full h-full object-cover transition-all duration-1000"
                     style={{
                       filter: ambientLight === "gallery" 

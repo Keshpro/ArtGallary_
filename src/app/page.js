@@ -184,7 +184,7 @@ function ArtCard({ art, isFavorite, onToggleFavorite, onSelect }) {
           <div>
             <span className="block text-[8px] uppercase tracking-widest text-zinc-500 font-bold mb-0.5">Value</span>
             <span className={`${spaceMono.className} text-sm font-black text-zinc-100 tracking-tight`}>
-              LKR {art.price?.toLocaleString()}
+              NZD {art.price?.toLocaleString()}
             </span>
           </div>
           <button

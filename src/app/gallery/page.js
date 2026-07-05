@@ -205,7 +205,7 @@ export default function GalleryPage() {
                 <div className="p-5 space-y-3">
                   <div>
                     <h3 className="text-sm font-bold text-zinc-200 truncate tracking-tight">{art.title}</h3>
-                    <span className={`${spaceMono.className} text-[10px] text-amber-500 font-bold block mt-0.5`}>LKR {art.price?.toLocaleString()}</span>
+                    <span className={`${spaceMono.className} text-[10px] text-amber-500 font-bold block mt-0.5`}>NZD {art.price?.toLocaleString()}</span>
                   </div>
 
                   <button
@@ -249,7 +249,7 @@ export default function GalleryPage() {
 
               <div className="space-y-1">
                 <h2 className={`${fraunces.className} text-xl font-black text-zinc-100 tracking-tight`}>{selectedArt.title}</h2>
-                <span className={`${spaceMono.className} text-sm font-black text-amber-500 block`}>LKR {selectedArt.price?.toLocaleString()}</span>
+                <span className={`${spaceMono.className} text-sm font-black text-amber-500 block`}>NZD {selectedArt.price?.toLocaleString()}</span>
                 <p className="text-xs text-zinc-400 leading-relaxed pt-2">{selectedArt.description}</p>
               </div>
 

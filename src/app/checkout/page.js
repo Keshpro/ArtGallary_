@@ -23,7 +23,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
 
   const totalPrice = cart.reduce((total, item) => total + (item.price || 0), 0);
-  const artworksList = cart.map(item => `- ${item.title} (LKR ${item.price})`).join("\n");
+  const artworksList = cart.map(item => `- ${item.title} (NZD ${item.price})`).join("\n");
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
